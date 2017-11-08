@@ -11,6 +11,6 @@ public class RPGHunger : GoapSensor {
         GetMemory().GetWorldState().Set( "saturation", saturationLevel );
     }
 
-    public void EatItem()
+    public void EatItem() { }
 
 }
