@@ -289,14 +289,14 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         actions = new List<IReGoapAction>(GetComponents<IReGoapAction>());
     }
 
-    public virtual List<IReGoapGoal> GetGoalsSet()
+    public virtual IEnumerable<IReGoapGoal> GetGoalsSet()
     {
         if (possibleGoalsDirty)
             UpdatePossibleGoals();
         return possibleGoals;
     }
 
-    public virtual List<IReGoapAction> GetActionsSet()
+    public virtual IEnumerable<IReGoapAction> GetActionsSet()
     {
         return actions;
     }

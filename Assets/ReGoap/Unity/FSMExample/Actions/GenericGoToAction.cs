@@ -10,21 +10,21 @@ using UnityEngine.VR;
 //  and then add multiple ExternalGoToAction to your agent's gameobject's behaviours
 // you can use this without any helper class by having the actions that need to move to a position
 //  or transform to have a precondition isAtPosition
-[RequireComponent(typeof( SmsGoToNavigated ) )]
+[RequireComponent(typeof( SmsGoTo ) )]
 public class GenericGoToAction : GoapAction
 {
     // sometimes a Transform is better (moving target), sometimes you do not have one (last target position)
     //  but if you're using multi-thread approach you can't use a transform or any unity's API
     protected Vector3 objectivePosition;
 
-    protected SmsGoToNavigated smsGoto;
+    protected SmsGoTo smsGoto;
 
     protected override void Awake()
     {
         base.Awake();
 
         SetDefaultEffects();
-        smsGoto = GetComponent<SmsGoToNavigated>();
+        smsGoto = GetComponent<SmsGoTo>();
     }
 
     public override void Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
