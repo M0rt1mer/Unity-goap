@@ -5,6 +5,6 @@ using System.Text;
 
 public interface ITransitionExecutor{
 
-    void ExecuteTransition(StateMachineTransition transition);
+    void ExecuteTransition(IStateMachineTransition transition);
 
     }

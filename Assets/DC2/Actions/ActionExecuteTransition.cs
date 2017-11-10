@@ -9,7 +9,8 @@ using System.Text;
 /// <typeparam name="Settings">IReGoapActionSettings class used by this transition. Factory uses it to initialize the transition</typeparam>
 /// <typeparam name="Factory">Child of LSMTransitionFactory, that can make the desired transition from this action's settings </typeparam>
 /// <typeparam name="Transition">The transition type used by this action</typeparam>
-public abstract class ActionExecuteTransition<Settings,Factory,Transition> : GoapAction where Factory : StateMachineTransitionFactory<Settings,Transition> where Settings : IReGoapActionSettings where Transition : StateMachineTransition {
+public abstract class ActionExecuteTransition<Settings,Factory,Transition,Initializer> : GoapAction 
+    where Factory : StateMachineTransitionFactory<Initializer,Transition> where Settings : IReGoapActionSettings, Initializer where Transition : StateMachineTransition<Initializer> {
 
     public Factory transition;
     ITransitionExecutor executor;
@@ -20,7 +21,8 @@ public abstract class ActionExecuteTransition<Settings,Factory,Transition> : Goa
 
     public override void Run(IReGoapAction previous, IReGoapAction next, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail) {
         base.Run(previous, next, settings, goalState, done, fail);
-        executor.ExecuteTransition( transition.MakeTransition( (Settings)settings, (StateMachineTransition transition) => done(this), (StateMachineTransition transition) => fail(this) ) );
+        executor.ExecuteTransition( transition.MakeTransition( (Initializer)settings, 
+            (StateMachineTransition<Initializer> transition) => done(this), (StateMachineTransition<Initializer> transition) => fail(this) ) );
     }
 
     public override bool IsInterruptable(){

@@ -89,20 +89,17 @@ public class ReGoapNode : INode<ReGoapState>
     {
         var agent = planner.GetCurrentAgent();
         var actions = agent.GetActionsSet();
-        for (var index = 0; index < actions.Count; index++)
-        {
-            foreach (var possibleAction in actions[index]) {
-                possibleAction.Precalculations(agent, goal);
-                var precond = possibleAction.GetPreconditions(goal, action);
-                var effects = possibleAction.GetEffects(goal, action);
-                if (possibleAction == action)
-                    continue;
-                if (effects.HasAny(goal) && // any effect is the current goal
-                    !goal.HasAnyConflict(effects) && // no effect is conflicting with the goal
-                    !goal.HasAnyConflict(precond) && // no precondition is conflicting with the goal
-                    possibleAction.CheckProceduralCondition(agent, goal, parent != null ? parent.action : null))
-                    yield return possibleAction;
-            }
+        foreach (var possibleAction in actions) {
+            possibleAction.Precalculations(agent, goal);
+            var precond = possibleAction.GetPreconditions(goal, action);
+            var effects = possibleAction.GetEffects(goal, action);
+            if (possibleAction == action)
+                continue;
+            if (effects.HasAny(goal) && // any effect is the current goal
+                !goal.HasAnyConflict(effects) && // no effect is conflicting with the goal
+                !goal.HasAnyConflict(precond) && // no precondition is conflicting with the goal
+                possibleAction.CheckProceduralCondition(agent, goal, parent != null ? parent.action : null))
+                yield return possibleAction;
         }
     }
 

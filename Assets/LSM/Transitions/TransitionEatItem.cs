@@ -2,21 +2,17 @@
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "GOAP/Transitions/TransitionEatItem")]
-public class TransitionFactoryEatItem : StateMachineTransitionFactory<ActionSettingsEatFromInventory,TransitionEatItem>
+public class TransitionFactoryEatItem : StateMachineTransitionFactory<TransitionEatItemInitializer, TransitionEatItem>
 {
     public override bool IsInterruptable() {
         return true;
     }
-
-    public override TransitionEatItem MakeTransition(ActionSettingsEatFromInventory init, Action<StateMachineTransition> OnDone, Action<StateMachineTransition> OnFailed)
-    {
-        return new TransitionEatItem( Layer, OnDone, OnFailed);
-    }
 }
 
-public class TransitionEatItem : StateMachineTransition{
+public class TransitionEatItem : StateMachineTransition<TransitionEatItemInitializer>{
 
-    public TransitionEatItem(StateMachineLayer layer, Action<StateMachineTransition> OnDone, Action<StateMachineTransition> OnFailed) : base(layer, OnDone, OnFailed){
+    public TransitionEatItem(TransitionEatItemInitializer initializer, StateMachineLayer layer, Action<StateMachineTransition<TransitionEatItemInitializer>> OnDone, Action<StateMachineTransition<TransitionEatItemInitializer>> OnFailed) : base(initializer, layer, OnDone, OnFailed)
+    {
     }
 
     public override bool Update(){
@@ -34,4 +30,8 @@ public class TransitionEatItem : StateMachineTransition{
 
         return true;
     }
+}
+
+public class TransitionEatItemInitializer {
+
 }

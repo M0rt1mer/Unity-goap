@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.VR;
 
 [RequireComponent(typeof(Inventory))]
-public class ActionEatFromInventory : ActionExecuteTransition<ActionSettingsEatFromInventory,TransitionFactoryEatItem,TransitionEatItem>
+public class ActionEatFromInventory : ActionExecuteTransition<ActionSettingsEatFromInventory,TransitionFactoryEatItem,TransitionEatItem,TransitionEatItemInitializer>
 {
 
     public override void Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
@@ -26,5 +26,5 @@ public class ActionEatFromInventory : ActionExecuteTransition<ActionSettingsEatF
 
 }
 
-public class ActionSettingsEatFromInventory : IReGoapActionSettings {
+public class ActionSettingsEatFromInventory : TransitionEatItemInitializer, IReGoapActionSettings {
 }

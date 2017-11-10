@@ -11,6 +11,6 @@ public interface IReGoapAgent
     void SetPlanValue<T>(string key, T value);
     bool HasPlanValue(string target);
     // THREAD SAFE
-    List<IReGoapGoal> GetGoalsSet();
-    List<IReGoapAction> GetActionsSet();
+    IEnumerable<IReGoapGoal> GetGoalsSet();
+    IEnumerable<IReGoapAction> GetActionsSet();
 }

@@ -133,7 +133,4 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         return string.Format("GoapAction('{0}')", Name);
     }
 
-    virtual public IEnumerator<IReGoapAction> GetEnumerator() {
-        yield return this;
-    }
 }

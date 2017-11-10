@@ -22,8 +22,6 @@ public interface IReGoapAction
     float GetCost(ReGoapState goalState, IReGoapAction next = null);
     // DO NOT CHANGE RUNTIME ACTION VARIABLES, precalculation can be runned many times even while an action is running
     void Precalculations(IReGoapAgent goapAgent, ReGoapState goalState);
-
-    IEnumerator<IReGoapAction> GetEnumerator();
 }
 
 public interface IReGoapActionSettings
