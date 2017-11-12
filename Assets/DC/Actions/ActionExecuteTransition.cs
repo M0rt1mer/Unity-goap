@@ -17,6 +17,7 @@ public abstract class ActionExecuteTransition<Settings,Factory,Transition,Initia
 
     protected override void Awake(){
         base.Awake();
+        executor = GetComponent<ITransitionExecutor>();
     }
 
     public override void Run(IReGoapAction previous, IReGoapAction next, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail) {

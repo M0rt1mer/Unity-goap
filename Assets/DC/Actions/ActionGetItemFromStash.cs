@@ -27,8 +27,8 @@ public class ActionGetItemFromStash : ActionExecuteTransition<ActionGetItemFromS
             if(stash != null) {
                 float localDistance = Vector3.Distance( stash.GetEntryPoint(), worldState.Get<Vector3>( WorldStates.STATE_POSITION ) );
                 if(localDistance < nearestStashDistance) {
-                    string localItem = stash.inv.items.First( item => Inventory.GetAllItemPrefixes( item ).Any( itemPrefix => itemsToFind.Contains( itemPrefix ) ) ); //find first item, which is in itemsToFind, OR whose any prefix is in itemsToFind
-                    if(localItem != null) {
+                    string localItem = stash.inv.items.FirstOrDefault( item => Inventory.GetAllItemPrefixes( item ).Any( itemPrefix => itemsToFind.Contains( itemPrefix ) ) ); //find first item, which is in itemsToFind, OR whose any prefix is in itemsToFind
+                    if(localItem != default(string) ) {
                         nearestStash = stash;
                         chosenItem = localItem;
                     }
