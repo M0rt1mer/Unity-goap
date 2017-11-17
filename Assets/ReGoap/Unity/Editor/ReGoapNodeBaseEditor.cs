@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using UnityEngine.VR;
-
+/*
 public class ReGoapNodeBaseEditor : EditorWindow
 {
     private List<ReGoapNodeEditor> nodes;
@@ -287,4 +287,4 @@ public class ReGoapNodeBaseEditor : EditorWindow
 
         GUI.changed = true;
     }
-}
+}*/

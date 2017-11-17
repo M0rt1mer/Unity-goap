@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -100,7 +101,7 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         return true;
     }
 
-    public virtual void Run(IReGoapAction previous, IReGoapAction next, IReGoapActionSettings settings,
+    public virtual IEnumerator Run(IReGoapAction previous, IReGoapAction next, IReGoapActionSettings settings,
         ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail)
     {
         interruptWhenPossible = false;
@@ -110,6 +111,7 @@ public class GoapAction : MonoBehaviour, IReGoapAction
 
         previousAction = previous;
         nextAction = next;
+        yield return null;
     }
 
     public virtual void Exit(IReGoapAction next)

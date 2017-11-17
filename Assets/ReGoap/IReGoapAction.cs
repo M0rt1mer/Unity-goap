@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public interface IReGoapAction
@@ -7,7 +8,7 @@ public interface IReGoapAction
     // userful for dynamic actions, for example a GoTo action can save some informations (wanted position)
     // while being chosen from the planner, we save this information and give it back when we run the method
     IReGoapActionSettings GetSettings(IReGoapAgent goapAgent, ReGoapState goalState);
-    void Run(IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail);
+    IEnumerator Run(IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail);
     void Exit(IReGoapAction nextAction);
     Dictionary<string, object> GetGenericValues();
     string GetName();

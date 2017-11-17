@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using UnityEngine;
 
+/*
 public class ReGoapTests
 {
     [TestFixtureSetUp]
@@ -168,4 +169,4 @@ public class ReGoapTests
         Assert.That(plan, Is.EqualTo(killEnemyGoal));
         ReGoapTestsHelper.ApplyAndValidatePlan(plan, memory);
     }
-}
+}*/

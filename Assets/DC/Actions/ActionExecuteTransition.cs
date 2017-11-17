@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,10 +21,11 @@ public abstract class ActionExecuteTransition<Settings,Factory,Transition,Initia
         executor = GetComponent<ITransitionExecutor>();
     }
 
-    public override void Run(IReGoapAction previous, IReGoapAction next, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail) {
+    public override IEnumerator Run(IReGoapAction previous, IReGoapAction next, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail) {
         base.Run(previous, next, settings, goalState, done, fail);
         executor.ExecuteTransition( transition.MakeTransition( (Initializer)settings, 
             (StateMachineTransition<Initializer> transition) => done(this), (StateMachineTransition<Initializer> transition) => fail(this) ) );
+        yield return null;
     }
 
     public override bool IsInterruptable(){

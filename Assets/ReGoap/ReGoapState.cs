@@ -5,17 +5,17 @@ using UnityEngine;
 public class ReGoapState : ICloneable
 {
     // can change to object
-    private volatile Dictionary<string, object> values;
+    private volatile Dictionary<IWorldState, object> values;
 
     public ReGoapState(ReGoapState old)
     {
         lock (old.values)
-            values = new Dictionary<string, object>(old.values);
+            values = new Dictionary<IWorldState, object>(old.values);
     }
 
     public ReGoapState()
     {
-        values = new Dictionary<string, object>();
+        values = new Dictionary<IWorldState, object>();
     }
 
     public static ReGoapState operator +(ReGoapState a, ReGoapState b)
@@ -77,7 +77,7 @@ public class ReGoapState : ICloneable
     }
 
     // write differences in "difference"
-    public int MissingDifference(ReGoapState other, ref ReGoapState difference, int stopAt = int.MaxValue, Func<KeyValuePair<string, object>, object, bool> predicate = null, bool test = false)
+    public int MissingDifference(ReGoapState other, ref ReGoapState difference, int stopAt = int.MaxValue, Func<KeyValuePair<IWorldState, object>, object, bool> predicate = null, bool test = false)
     {
         lock (values)
         {
@@ -136,7 +136,7 @@ public class ReGoapState : ICloneable
         }
     }
 
-    public T Get<T>(string key)
+    public T Get<T>(WorldState<T> key)
     {
         lock (values)
         {
@@ -146,7 +146,7 @@ public class ReGoapState : ICloneable
         }
     }
 
-    public void Set<T>(string key, T value)
+    public void Set<T>( WorldState<T> key, T value)
     {
         lock (values)
         {
@@ -154,7 +154,7 @@ public class ReGoapState : ICloneable
         }
     }
 
-    public void Remove(string key)
+    public void Remove<T>( WorldState<T> key )
     {
         lock (values)
         {
@@ -162,13 +162,17 @@ public class ReGoapState : ICloneable
         }
     }
 
-    public Dictionary<string, object> GetValues()
+    public void SetFrom( IWorldState state, ReGoapState otherState ) {
+        values[state] = otherState.values[state];
+    }
+
+    public Dictionary<IWorldState, object> GetValues()
     {
         lock (values)
             return values;
     }
 
-    public bool HasKey(string key)
+    public bool HasKey( IWorldState key )
     {
         lock (values)
             return values.ContainsKey(key);

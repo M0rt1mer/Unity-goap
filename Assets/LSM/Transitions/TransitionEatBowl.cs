@@ -11,7 +11,7 @@ public class TransitionFactoryEatBowl : StateMachineTransitionFactory<Transition
 
 public class TransitionEatBowl : StateMachineTransition<TransitionEatBowlInitializer>{
 
-    public TransitionEatBowl(TransitionEatItemInitializer initializer, StateMachineLayer layer, Action<StateMachineTransition<TransitionEatItemInitializer>> OnDone, Action<StateMachineTransition<TransitionEatItemInitializer>> OnFailed) : base(initializer, layer, OnDone, OnFailed)
+    public TransitionEatBowl( TransitionEatBowlInitializer initializer, StateMachineLayer layer, Action<StateMachineTransition<TransitionEatBowlInitializer>> OnDone, Action<StateMachineTransition<TransitionEatBowlInitializer>> OnFailed) : base(initializer, layer, OnDone, OnFailed)
     {
     }
 

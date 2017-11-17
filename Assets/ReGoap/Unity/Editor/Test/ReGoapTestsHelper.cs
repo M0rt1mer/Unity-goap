@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using UnityEngine;
 
-public class ReGoapTestsHelper
+/*public class ReGoapTestsHelper
 {
     public static ReGoapTestAction GetCustomAction(GameObject gameObject, string name, Dictionary<string, bool> preconditionsBools,
         Dictionary<string, bool> effectsBools, int cost = 1)
@@ -54,3 +54,4 @@ public class ReGoapTestsHelper
         Assert.That(plan.GetGoalState().MissingDifference(memory.GetWorldState(), 1) == 0);
     }
 }
+*/

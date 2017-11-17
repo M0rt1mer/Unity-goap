@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using NUnit.Framework;
 
+/*
 // simple benchmark class that benchmarks tests
 public class ReGoapBenchmarkTests
 {
@@ -62,3 +63,4 @@ public class ReGoapBenchmarkTests
         Profile("TwoPhaseChainedPlanBenchmark", tests.TestTwoPhaseChainedPlan);
     }
 }
+*/

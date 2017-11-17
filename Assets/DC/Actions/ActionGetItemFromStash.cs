@@ -12,8 +12,8 @@ public class ActionGetItemFromStash : ActionExecuteTransition<ActionGetItemFromS
 
         HashSet<string> itemsToFind = new HashSet<string>();
         foreach (var state in goalState.GetValues().Keys) {
-            if (state.StartsWith("hasItem:"))
-                itemsToFind.Add(state.Substring(8));
+            if ( state is WorldStateHasItem )
+                itemsToFind.Add( (state as WorldStateHasItem).item );
         }
 
         ReGoapState worldState = goapAgent.GetMemory().GetWorldState();
@@ -22,10 +22,10 @@ public class ActionGetItemFromStash : ActionExecuteTransition<ActionGetItemFromS
         float nearestStashDistance = float.MaxValue;
         string chosenItem = null;
 
-        foreach(SmartObject SO in worldState.Get<SmartObject[]>( "soList" )) {
+        foreach(SmartObject SO in goapAgent.GetMemory().GetAvailableSoList() ) {
             var stash = SO as SOStash;
             if(stash != null) {
-                float localDistance = Vector3.Distance( stash.GetEntryPoint(), worldState.Get<Vector3>( WorldStates.STATE_POSITION ) );
+                float localDistance = Vector3.Distance( stash.GetEntryPoint(), worldState.Get( WorldStates.STATE_POSITION ) );
                 if(localDistance < nearestStashDistance) {
                     string localItem = stash.inv.items.FirstOrDefault( item => Inventory.GetAllItemPrefixes( item ).Any( itemPrefix => itemsToFind.Contains( itemPrefix ) ) ); //find first item, which is in itemsToFind, OR whose any prefix is in itemsToFind
                     if(localItem != default(string) ) {
@@ -38,9 +38,7 @@ public class ActionGetItemFromStash : ActionExecuteTransition<ActionGetItemFromS
 
         if( nearestStash != null & chosenItem != null ) {
             preconditions.Clear();
-            preconditions.Set(WorldStates.STATE_POSITION, nearestStash);
-
-            //effects.Set()
+            preconditions.Set(WorldStates.STATE_POSITION, nearestStash.GetEntryPoint() );
 
             settings = new ActionGetItemFromStashSettings() {
                 Stash = nearestStash,

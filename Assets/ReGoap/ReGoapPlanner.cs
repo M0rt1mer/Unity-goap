@@ -39,7 +39,7 @@ public class ReGoapPlanner : IGoapPlanner
             var goalState = currentGoal.GetGoalState();
 
             // can't work with dynamic actions, of course
-            if (!settings.UsingDynamicActions)
+            /*if (!settings.UsingDynamicActions)
             {
                 var wantedGoalCheck = currentGoal.GetGoalState();
                 // we check if the goal can be archived through actions first, so we don't brute force it with A* if we can't
@@ -59,7 +59,7 @@ public class ReGoapPlanner : IGoapPlanner
                     currentGoal = null;
                     continue;
                 }
-            }
+            }*/
 
             var leaf = (ReGoapNode)astar.Run(
                 new ReGoapNode(this, goalState, null, null), goalState, settings.MaxIterations, settings.PlanningEarlyExit);

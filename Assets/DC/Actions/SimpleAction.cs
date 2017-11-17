@@ -1,36 +1,72 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
 
+/// <summary>
+/// Simple action is defined by three sets:
+/// - effects - a set of effects. Some of them can be parametrized (if effect is parametrized, action can produce any value of the effect)
+/// - preconditions - 
+/// - run function
+/// </summary>
 public abstract class SimpleAction : ScriptableObject, IReGoapAction {
 
+    public string name;
+
     private ReGoapState staticEffects;
-    string[] parametrizedEffects;
+    IWorldState[] parametrizedEffects;
     private ReGoapState staticPreconditions;
 
-    protected abstract void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref string[] parametrizedEffects, ref ReGoapState staticPreconditions );
+    protected abstract void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref IWorldState[] parametrizedEffects, ref ReGoapState staticPreconditions );
 
-    protected void Awake(){
+    public void OnEnable(){
         InitializePreconditionsAndEffects( ref staticEffects, ref parametrizedEffects, ref staticPreconditions );
     }
 
-    IReGoapActionSettings IReGoapAction.GetSettings(IReGoapAgent goapAgent, ReGoapState goalState)
-    {
-        throw new NotImplementedException();
+    /// <summary>
+    /// Creates a new Effects set based on parametrized world states
+    /// </summary>
+    /// <param name="goalState"></param>
+    /// <returns></returns>
+    protected ReGoapState ExtractEffectsFromGoal( ReGoapState goalState ) {
+        ReGoapState newState = new ReGoapState( staticEffects );
+        foreach(IWorldState state in parametrizedEffects) {
+            if(goalState.HasKey( state )) {
+                newState.SetFrom( state, goalState );
+            }
+        }
+        return newState;
     }
 
-    void IReGoapAction.Run(IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail)
-    {
-        throw new NotImplementedException();
+    protected abstract ReGoapState GetPreconditionsFromGoal( ReGoapState goal );
+
+    public ReGoapState GetPreconditions( ReGoapState goalState, IReGoapAction next = null ) {
+        ReGoapState variablePreconditions = GetPreconditionsFromGoal( goalState );
+        if( variablePreconditions == null || variablePreconditions.GetValues().Count == 0)
+            return staticPreconditions;
+        else {
+            return staticPreconditions + variablePreconditions;
+        }
     }
 
-    void IReGoapAction.Exit(IReGoapAction nextAction)
-    {
-        throw new NotImplementedException();
+    protected abstract IEnumerator Execute( SimpleActionSettings settings, Action fail );
+
+    IReGoapActionSettings IReGoapAction.GetSettings(IReGoapAgent goapAgent, ReGoapState goalState){
+        return new SimpleActionSettings { agent = goapAgent as GoapAgent, effects = ExtractEffectsFromGoal( goalState ) };
     }
 
+    IEnumerator IReGoapAction.Run(IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail){
+        IEnumerator progress = Execute( settings as SimpleActionSettings, () => { fail( this ); } );
+        while(progress.MoveNext())
+            yield return progress.Current;
+        done(this);
+    }
+
+    void IReGoapAction.Exit(IReGoapAction nextAction){}
+
+    //not used, therefore not implemented
     Dictionary<string, object> IReGoapAction.GetGenericValues()
     {
         throw new NotImplementedException();
@@ -38,46 +74,31 @@ public abstract class SimpleAction : ScriptableObject, IReGoapAction {
 
     string IReGoapAction.GetName()
     {
-        throw new NotImplementedException();
+        return name;
     }
 
+    // used in oneActionPerActor
     bool IReGoapAction.IsActive()
     {
         throw new NotImplementedException();
     }
 
-    void IReGoapAction.PostPlanCalculations(IReGoapAgent goapAgent)
-    {
-        throw new NotImplementedException();
-    }
+    void IReGoapAction.PostPlanCalculations(IReGoapAgent goapAgent){}
 
-    bool IReGoapAction.IsInterruptable()
-    {
-        throw new NotImplementedException();
-    }
+    bool IReGoapAction.IsInterruptable() { return true; }
 
-    void IReGoapAction.AskForInterruption()
-    {
-        throw new NotImplementedException();
-    }
+    void IReGoapAction.AskForInterruption(){}
 
-    ReGoapState IReGoapAction.GetPreconditions(ReGoapState goalState, IReGoapAction next)
-    {
-        throw new NotImplementedException();
-    }
-
-    ReGoapState IReGoapAction.GetEffects(ReGoapState goalState, IReGoapAction next)
-    {
-        throw new NotImplementedException();
+    ReGoapState IReGoapAction.GetEffects(ReGoapState goalState, IReGoapAction next){
+        return ExtractEffectsFromGoal( goalState );
     }
 
     bool IReGoapAction.CheckProceduralCondition(IReGoapAgent goapAgent, ReGoapState goalState, IReGoapAction nextAction){
         return true;
     }
 
-    float IReGoapAction.GetCost(ReGoapState goalState, IReGoapAction next)
-    {
-        throw new NotImplementedException();
+    float IReGoapAction.GetCost(ReGoapState goalState, IReGoapAction next){
+        return 1;
     }
 
     /// <summary>
@@ -86,4 +107,12 @@ public abstract class SimpleAction : ScriptableObject, IReGoapAction {
     /// <param name="goapAgent"></param>
     /// <param name="goalState"></param>
     void IReGoapAction.Precalculations(IReGoapAgent goapAgent, ReGoapState goalState){}
+
+}
+
+public class SimpleActionSettings : IReGoapActionSettings {
+
+    public GoapAgent agent { get; set; }
+    public ReGoapState effects { get; set; }
+
 }

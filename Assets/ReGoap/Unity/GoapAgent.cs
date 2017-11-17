@@ -27,6 +27,9 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
     protected bool interruptOnNextTransistion;
 
     protected PlanWork? currentPlanWorker;
+
+    public SimpleAction[] availableActions;
+
     public bool IsPlanning
     {
         get { return currentPlanWorker != null && currentPlanWorker.Value.NewGoal == null; }
@@ -199,7 +202,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
                 next = plan.Peek().Action;
             if (previous != null)
                 previous.Action.Exit(currentActionState.Action);
-            currentActionState.Action.Run(previous != null ? previous.Action : null, next, currentActionState.Settings, currentGoal.GetGoalState(), WarnActionEnd, WarnActionFailure);
+            StartCoroutine( currentActionState.Action.Run(previous != null ? previous.Action : null, next, currentActionState.Settings, currentGoal.GetGoalState(), WarnActionEnd, WarnActionFailure) );
         }
     }
 
@@ -286,7 +289,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
 
     public virtual void RefreshActionsSet()
     {
-        actions = new List<IReGoapAction>(GetComponents<IReGoapAction>());
+        actions = new List<IReGoapAction>( GetComponents<IReGoapAction>().Concat( this.availableActions ) );
     }
 
     public virtual IEnumerable<IReGoapGoal> GetGoalsSet()

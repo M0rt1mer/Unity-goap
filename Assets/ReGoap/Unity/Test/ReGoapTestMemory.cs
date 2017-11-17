@@ -1,4 +1,4 @@
-﻿
+﻿/*
 public class ReGoapTestMemory : GoapMemory
 {
     public void Init()
@@ -10,4 +10,4 @@ public class ReGoapTestMemory : GoapMemory
     {
         state.Set(key, value);
     }
-}
+}*/

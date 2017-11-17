@@ -11,9 +11,9 @@ public class Inventory : GoapSensor {
         base.UpdateSensor();
         var worldState = GetMemory().GetWorldState();
         foreach(var item in items) {
-            worldState.Set( "hasItem:" + item, true );
+            worldState.Set( WorldStateHasItem.GetStateForItem(item), true );
             foreach (var itemPrefix in GetAllItemPrefixes(item))
-                worldState.Set("hasItem:" + itemPrefix, true);
+                worldState.Set( WorldStateHasItemCategory.GetStateForItem(itemPrefix) , true);
         }
     }
 

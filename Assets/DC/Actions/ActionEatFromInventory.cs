@@ -12,10 +12,10 @@ public class ActionEatFromInventory : ActionExecuteTransition<ActionSettingsEatF
     public override void Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
     {
         effects.Clear();
-        effects.Set( WorldStates.STATE_FLOAT_HUNGER, goalState.Get<float>( WorldStates.STATE_FLOAT_HUNGER ) );
-        effects.Set("hasItem:food", false);
+        effects.Set( WorldStates.STATE_FLOAT_HUNGER, goalState.Get( WorldStates.STATE_FLOAT_HUNGER ) );
+        effects.Set( WorldStateHasItemCategory.GetStateForItem("food"), false);
         preconditions.Clear();
-        preconditions.Set("hasItem:food", true);
+        preconditions.Set( WorldStateHasItemCategory.GetStateForItem( "food" ), true);
         base.Precalculations(goapAgent, goalState);
     }
 
