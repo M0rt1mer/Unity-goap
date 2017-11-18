@@ -22,7 +22,7 @@ public class ReGoapNode : INode<ReGoapState>
         this.parent = parent;
         this.action = action;
         if (action != null)
-            actionSettings = action.GetSettings(planner.GetCurrentAgent(), goal);
+            actionSettings = action.GetSettings(planner.GetCurrentAgent(), newGoal);
 
         if (this.parent != null)
         {

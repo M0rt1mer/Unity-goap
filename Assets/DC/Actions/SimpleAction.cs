@@ -15,8 +15,11 @@ public abstract class SimpleAction : ScriptableObject, IReGoapAction {
 
     public string name;
 
+    [System.NonSerialized]
     private ReGoapState staticEffects;
+    [System.NonSerialized]
     IWorldState[] parametrizedEffects;
+    [System.NonSerialized]
     private ReGoapState staticPreconditions;
 
     protected abstract void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref IWorldState[] parametrizedEffects, ref ReGoapState staticPreconditions );
@@ -54,6 +57,9 @@ public abstract class SimpleAction : ScriptableObject, IReGoapAction {
     protected abstract IEnumerator Execute( SimpleActionSettings settings, Action fail );
 
     IReGoapActionSettings IReGoapAction.GetSettings(IReGoapAgent goapAgent, ReGoapState goalState){
+        Debug.Log( staticEffects );
+        Debug.Log( parametrizedEffects );
+        Debug.Log( goalState );
         return new SimpleActionSettings { agent = goapAgent as GoapAgent, effects = ExtractEffectsFromGoal( goalState ) };
     }
 
