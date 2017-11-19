@@ -23,8 +23,6 @@ public class GoapAction : MonoBehaviour, IReGoapAction
     protected Dictionary<string, object> genericValues;
     protected bool interruptWhenPossible;
 
-    protected IReGoapActionSettings settings = null;
-
     #region UnityFunctions
     protected virtual void Awake()
     {
@@ -71,29 +69,10 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         interruptWhenPossible = true;
     }
 
-    public virtual void Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
+    public virtual IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
     {
         agent = goapAgent;
-    }
-
-    public virtual IReGoapActionSettings GetSettings(IReGoapAgent goapAgent, ReGoapState goalState)
-    {
-        return settings;
-    }
-
-    public virtual ReGoapState GetPreconditions(ReGoapState goalState, IReGoapAction next = null)
-    {
-        return preconditions;
-    }
-
-    public virtual ReGoapState GetEffects(ReGoapState goalState, IReGoapAction next = null)
-    {
-        return effects;
-    }
-
-    public virtual float GetCost(ReGoapState goalState, IReGoapAction next = null)
-    {
-        return Cost;
+        return null;
     }
 
     public virtual bool CheckProceduralCondition(IReGoapAgent goapAgent, ReGoapState goalState, IReGoapAction next = null)
@@ -135,4 +114,23 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         return string.Format("GoapAction('{0}')", Name);
     }
 
+    public virtual ReGoapState GetPreconditions(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
+    {
+        return preconditions;
+    }
+
+    public virtual ReGoapState GetEffects(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
+    {
+        return effects;
+    }
+
+    public virtual bool CheckProceduralCondition(IReGoapAgent goapAgent, IReGoapActionSettings settings, ReGoapState goalState, IReGoapAction nextAction = null)
+    {
+        return true;
+    }
+
+    public virtual float GetCost(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
+    {
+        return Cost;
+    }
 }

@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
 
-[CreateAssetMenu(menuName = "GOAP/SimpleActions/GoTo")]
-class SimpleActionGoto : SimpleAction {
+/// <summary>
+/// Simple action that moves agent to desired position. Can fulfill any position requirement
+/// Templating is done to allow further overriding
+/// </summary>
+/// <typeparam name="Settings"></typeparam>
+class SimpleActionGoto<Settings> : SimpleAction<Settings> where Settings: SimpleActionSettings, new() {
 
-    protected override void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref IWorldState[] parametrizedEffects, ref ReGoapState staticPreconditions ) {
-        staticEffects = new ReGoapState();
-        parametrizedEffects = new IWorldState[] { WorldStates.STATE_POSITION };
-        staticPreconditions = new ReGoapState();
-        Debug.Log( "Initializnf SimpleActionGoto" );
+    protected override void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref List<IWorldState> parametrizedEffects, ref ReGoapState staticPreconditions ) {
+        parametrizedEffects.Add( WorldStates.STATE_POSITION );
     }
 
-    protected override IEnumerator Execute( SimpleActionSettings settings, Action fail ) {
+    protected override IEnumerator Execute(Settings settings, Action fail ) {
 
         var navMeshAgent = settings.agent.GetComponent<NavMeshAgent>();
         navMeshAgent.SetDestination( settings.effects.Get( WorldStates.STATE_POSITION) );
@@ -28,8 +27,11 @@ class SimpleActionGoto : SimpleAction {
 
     }
 
-    protected override ReGoapState GetPreconditionsFromGoal( ReGoapState goal ) {
+    protected override ReGoapState GetPreconditionsFromGoal( ReGoapState goal, Settings settings ) {
         return null;
     }
     
 }
+
+[CreateAssetMenu(menuName = "GOAP/SimpleActions/GoTo")]
+class SimpleActionGoTo : SimpleActionGoto<SimpleActionSettings> { }

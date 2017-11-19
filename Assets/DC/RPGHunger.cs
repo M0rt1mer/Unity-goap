@@ -12,7 +12,10 @@ public class RPGHunger : GoapSensor {
     }
 
     public void EatItem( string item ) {
-        saturationLevel = Mathf.Max(saturationLevel + 0.34f, 1);
+        saturationLevel = Mathf.Max(saturationLevel + GetSingleItemFoodLevel(), 1);
     }
 
+    public static float GetSingleItemFoodLevel() {
+        return 0.34f;
+    }
 }

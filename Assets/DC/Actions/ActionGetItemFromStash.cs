@@ -8,7 +8,7 @@ using UnityEngine;
 public class ActionGetItemFromStash : ActionExecuteTransition<ActionGetItemFromStashSettings,TransitionFactoryGetItemFromStash,TransitionGetItemFromStash,TransitionGetItemFromStashInitializer>{
 
 
-    public override void Precalculations(IReGoapAgent goapAgent, ReGoapState goalState) {
+    public override IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, ReGoapState goalState) {
 
         HashSet<string> itemsToFind = new HashSet<string>();
         foreach (var state in goalState.GetValues().Keys) {
@@ -40,12 +40,12 @@ public class ActionGetItemFromStash : ActionExecuteTransition<ActionGetItemFromS
             preconditions.Clear();
             preconditions.Set(WorldStates.STATE_POSITION, nearestStash.GetEntryPoint() );
 
-            settings = new ActionGetItemFromStashSettings() {
+            return new ActionGetItemFromStashSettings() {
                 Stash = nearestStash,
                 Item = chosenItem
             };
         }
-
+        return null;
     }
 
 }
