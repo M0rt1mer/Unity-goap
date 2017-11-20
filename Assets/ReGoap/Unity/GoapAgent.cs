@@ -28,7 +28,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
 
     protected PlanWork? currentPlanWorker;
 
-    public SimpleAction[] availableActions;
+    public SimpleActionBase[] availableActions;
 
     public bool IsPlanning
     {
@@ -80,7 +80,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         {
             var state = memory.GetWorldState();
             if (currentActionState.Action.GetPreconditions(state, currentActionState.Settings).MissingDifference(state, 1) > 0)
-                TryWarnActionFailure(currentActionState.Action);
+                TryWarnActionFailure(currentActionState);
         }
     }
     #endregion
@@ -108,12 +108,12 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         }
     }
 
-    protected virtual void TryWarnActionFailure(IReGoapAction action)
+    protected virtual void TryWarnActionFailure(ReGoapActionState actionState)
     {
-        if (action.IsInterruptable())
-            WarnActionFailure(action);
+        if (actionState.Action.IsInterruptable())
+            WarnActionFailure( actionState.Action);
         else
-            action.AskForInterruption();
+            actionState.Action.AskForInterruption( actionState.Settings );
     }
 
     protected virtual bool CalculateNewGoal(bool forceStart = false)
@@ -235,7 +235,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         if (currentActionState != null && !currentActionState.Action.IsInterruptable())
         {
             interruptOnNextTransistion = true;
-            currentActionState.Action.AskForInterruption();
+            currentActionState.Action.AskForInterruption( currentActionState.Settings );
         }
         else
             CalculateNewGoal();
@@ -287,9 +287,10 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         possibleGoalsDirty = true;
     }
 
-    public virtual void RefreshActionsSet()
-    {
-        actions = new List<IReGoapAction>( GetComponents<IReGoapAction>().Concat( this.availableActions ) );
+    public virtual void RefreshActionsSet(){
+        actions = new List<IReGoapAction>( GetComponents<IReGoapAction>().Concat( 
+            this.availableActions.Where( x=>(x!=null) ).Cast<IReGoapAction>() )  //select non-null elements (null can easily be entered in editor by incompetent users)
+            );
     }
 
     public virtual IEnumerable<IReGoapGoal> GetGoalsSet()

@@ -64,7 +64,7 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         return true;
     }
 
-    public virtual void AskForInterruption()
+    public virtual void AskForInterruption( IReGoapActionSettings settings )
     {
         interruptWhenPossible = true;
     }

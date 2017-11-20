@@ -11,7 +11,7 @@ public interface IReGoapAction
     bool IsActive();
     void PostPlanCalculations(IReGoapAgent goapAgent);
     bool IsInterruptable();
-    void AskForInterruption();
+    void AskForInterruption( IReGoapActionSettings settings );
     // THREAD SAFE
     ReGoapState GetPreconditions(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
     ReGoapState GetEffects(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);

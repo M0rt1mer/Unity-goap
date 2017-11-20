@@ -20,8 +20,10 @@ public class ReGoapNode : INode<ReGoapState>
     {
         this.planner = planner;
         this.parent = parent;
-        this.action = actionState.Action;
-        this.actionSettings = actionState.Settings;
+        if(actionSettings != null) {
+            this.action = actionState.Action;
+            this.actionSettings = actionState.Settings;
+        }
 
         if (this.parent != null)
         {
