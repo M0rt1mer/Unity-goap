@@ -6,7 +6,7 @@ using UnityEngine;
 public abstract class WorldStates {
 
     public static WorldState<Vector3> STATE_POSITION = new WorldState<Vector3>();// = "isAtPosition";
-    public static WorldState<float> STATE_FLOAT_HUNGER = new WorldState<float>( WorldStateLogic.AT_LEAST ); // "at least X saturation"
+    public static WorldState<float> STATE_FLOAT_HUNGER = new WorldStateComparable<float>( WorldStateLogic.AT_LEAST ); // "at least X saturation"
     public static WorldState<string> STATE_HAND_LEFT = new WorldState<string>();
     public static WorldState<string> STATE_HAND_RIGHT = new WorldState<string>();
 
@@ -46,12 +46,33 @@ public class WorldStateHasItemCategory : WorldState<bool> {
     }
 }
 
+/// <summary>
+/// Used for WorldStates with EQUAL logic - it doesn't need to be comparable
+/// </summary>
+/// <typeparam name="InnerType"></typeparam>
 public class WorldState<InnerType> : IWorldState {
 
-    public WorldStateLogic logic { private set; get; }
+    public virtual WorldStateLogic logic {
+        get { return WorldStateLogic.EQUAL; }
+        protected set { }
+    }
 
-    public WorldState( WorldStateLogic logic = WorldStateLogic.EQUAL ){
+    public override string ToString() {
+        return string.Format( "WorldState[{0}]", typeof(InnerType).Name );
+    }
+
+}
+
+public class WorldStateComparable<InnerType> : WorldState<InnerType> where InnerType : IComparable {
+
+    public override WorldStateLogic logic { protected set; get; }
+
+    public WorldStateComparable( WorldStateLogic logic = WorldStateLogic.EQUAL ){
         this.logic = logic;
+    }
+
+    public override string ToString() {
+        return string.Format( "WorldState{1}[{0}]", typeof(InnerType).Name, logic.ToString() );
     }
 
 }

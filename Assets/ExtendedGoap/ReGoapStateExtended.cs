@@ -21,6 +21,12 @@ public class ReGoapStateExtended : ICloneable
         values = new Dictionary<IWorldState, object>();
     }
 
+    /// <summary>
+    /// Adds two extended states together. returns new extended states. respects WorldStateLogic
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
     public static ReGoapStateExtended operator +(ReGoapStateExtended a, ReGoapStateExtended b)
     {
         ReGoapStateExtended result;
@@ -30,16 +36,28 @@ public class ReGoapStateExtended : ICloneable
         }
         lock (b.values)
         {
-            foreach (var pair in b.values)
-                result.values[pair.Key] = pair.Value;
+            foreach(var pair in b.values) {
+                if(a.values.ContainsKey( pair.Key )) { //value is contained in both a and b
+                    switch(pair.Key.logic) {
+                        case WorldStateLogic.EQUAL: throw new ArgumentException( "Conflict on " + pair.Key );
+                        case WorldStateLogic.AT_LEAST: result.values[ pair.Key ] = Utils.Max( (IComparable) a.values[ pair.Key ], (IComparable) b.values[ pair.Key ] ); break;
+                        case WorldStateLogic.AT_MOST: result.values[pair.Key] = Utils.Min( (IComparable)a.values[pair.Key], (IComparable)b.values[pair.Key] ); break;
+                    }
+                } else result.values[pair.Key] = pair.Value; //value was only in b
+            }
             return result;
         }
     }
+
+
 
     public int Count
     {
         get { return values.Count; }
     }
+
+
+
     public bool DoesFullfillGoal(ReGoapStateExtended goal)
     {
         lock (values) lock (goal.values)
