@@ -6,9 +6,9 @@ public class ReGoapStateExtendedTest {
 
     WorldState<float> wsEqual = new WorldState<float>();
 
-    WorldState<float> wsAtLeast = new WorldStateComparable<float>( WorldStateLogic.AT_LEAST );
+    WorldState<float> wsAtLeast = new WorldStateComparable<float,WorldStateLogicAtLeast>();
 
-    WorldState<float> wsAtMost = new WorldStateComparable<float>(WorldStateLogic.AT_MOST);
+    WorldState<float> wsAtMost = new WorldStateComparable<float,WorldStateLogicAtMost>();
 
     [Test]
     public void _1_plusOperator() {
@@ -38,9 +38,28 @@ public class ReGoapStateExtendedTest {
     }
 
     [Test]
-    public void _2_effectCompatibility() {
+    public void _2_hasConflict() {
 
-        
+        ReGoapStateExtended goal = new ReGoapStateExtended();
+        ReGoapStateExtended prec = new ReGoapStateExtended();
+        ReGoapStateExtended eff = new ReGoapStateExtended();
+
+        goal.Set(wsEqual, 5);
+        eff.Set(wsAtLeast, 4);
+
+        Assert.IsFalse( goal.HasConflict( prec, eff ) ); // no common state - no conflict
+
+        goal.Clear(); prec.Clear(); eff.Clear();
+
+        goal.Set(wsAtLeast, 5);
+        eff.Set(wsAtLeast, 7);
+        Assert.IsFalse(goal.HasConflict(prec, eff), "at least, effect higher"); // effect ensures higher "at least" bound, no conflict
+
+        goal.Clear(); prec.Clear(); eff.Clear();
+        goal.Set(wsAtLeast, 9);
+        eff.Set(wsAtLeast, 4);
+        Assert.IsFalse(goal.HasConflict(prec, eff), "at least, effect lower"); // effect ensures lower "at least" bound, is a conflict
+
 
 
     }

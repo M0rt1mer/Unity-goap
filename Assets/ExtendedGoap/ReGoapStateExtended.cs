@@ -38,25 +38,34 @@ public class ReGoapStateExtended : ICloneable
         {
             foreach(var pair in b.values) {
                 if(a.values.ContainsKey( pair.Key )) { //value is contained in both a and b
-                    switch(pair.Key.logic) {
-                        case WorldStateLogic.EQUAL: throw new ArgumentException( "Conflict on " + pair.Key );
-                        case WorldStateLogic.AT_LEAST: result.values[ pair.Key ] = Utils.Max( (IComparable) a.values[ pair.Key ], (IComparable) b.values[ pair.Key ] ); break;
-                        case WorldStateLogic.AT_MOST: result.values[pair.Key] = Utils.Min( (IComparable)a.values[pair.Key], (IComparable)b.values[pair.Key] ); break;
-                    }
+                    result.values[pair.Key] = pair.Key.logic.Add(a.values[pair.Key], b.values[pair.Key]); // use this key's logic to combine the two values
                 } else result.values[pair.Key] = pair.Value; //value was only in b
             }
             return result;
         }
     }
 
-
-
     public int Count
     {
         get { return values.Count; }
     }
 
+    public bool HasConflict(ReGoapStateExtended precond, ReGoapStateExtended effects) {
 
+        //check effects
+        foreach (var key in effects.values.Keys) {
+            if (effects.HasKey(key))
+                if (key.logic.IsConflict(values[key], effects.values[key]) )
+                    return true;
+        }
+        //check preconditions
+
+        return false;
+    }
+
+    public ReGoapStateExtended Difference(ReGoapStateExtended subtractor) {
+
+    }
 
     public bool DoesFullfillGoal(ReGoapStateExtended goal)
     {
@@ -73,6 +82,7 @@ public class ReGoapStateExtended : ICloneable
             return false;
         }
     }
+
     public bool HasAnyConflict(ReGoapStateExtended other) // used only in backward for now
     {
         lock (values) lock (other.values)
