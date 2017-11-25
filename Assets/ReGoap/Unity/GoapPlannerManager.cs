@@ -15,8 +15,7 @@ public class GoapPlannerThread
     private readonly Action<GoapPlannerThread, PlanWork, IReGoapGoal> onDonePlan;
     private readonly AutoResetEvent threadEvents;
 
-    public GoapPlannerThread(AutoResetEvent threadEvents, ReGoapPlannerSettings plannerSettings, Queue<PlanWork> worksQueue, Action<GoapPlannerThread, PlanWork, IReGoapGoal> onDonePlan)
-    {
+    public GoapPlannerThread(AutoResetEvent threadEvents, ReGoapPlannerSettings plannerSettings, Queue<PlanWork> worksQueue, Action<GoapPlannerThread, PlanWork, IReGoapGoal> onDonePlan) {
         this.threadEvents = threadEvents;
         planner = new ReGoapPlanner(plannerSettings);
         this.worksQueue = worksQueue;
@@ -173,13 +172,11 @@ public class GoapPlannerManager : MonoBehaviour
         {
             doneWorks.Add(work);
 #if DEBUG
-            if (work.NewGoal != null)
-            {
-                ReGoapLogger.Log("[GoapPlannerManager] Done calculating plan, actions list:");
+            if(work.NewGoal != null) {
+                ReGoapLogger.Log( "[GoapPlannerManager] Done calculating plan, actions list:" );
                 var i = 0;
-                foreach (var action in work.NewGoal.GetPlan())
-                {
-                    ReGoapLogger.Log(string.Format("{0}: {1}", i++, action.Action));
+                foreach(var action in work.NewGoal.GetPlan()) {
+                    ReGoapLogger.Log( string.Format( "{0}: {1}", i++, action.Action ) );
                 }
             }
 #endif

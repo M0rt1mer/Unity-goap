@@ -79,7 +79,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         if (ValidateActiveAction)
         {
             var state = memory.GetWorldState();
-            if (currentActionState.Action.GetPreconditions(state, currentActionState.Settings).MissingDifference(state, 1) > 0)
+            if ( !currentActionState.Action.GetPreconditions(state, currentActionState.Settings).Difference(state).IsEmpty() )
                 TryWarnActionFailure(currentActionState);
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class ReGoapNode : INode<ReGoapState>
 {
@@ -9,85 +10,67 @@ public class ReGoapNode : INode<ReGoapState>
     private readonly ReGoapNode parent;
     private readonly IReGoapAction action;
     private readonly IReGoapActionSettings actionSettings;
-    private readonly ReGoapState state;
     private readonly ReGoapState goal;
     private readonly float g;
     private readonly float h;
 
     private readonly float heuristicMultiplier = 1;
 
-    public ReGoapNode(IGoapPlanner planner, ReGoapState newGoal, ReGoapNode parent, ReGoapActionState actionState)
+    public ReGoapNode(IGoapPlanner planner, ReGoapState parentGoal, ReGoapNode parent, ReGoapActionState actionState)
     {
         this.planner = planner;
         this.parent = parent;
-        if(actionSettings != null) {
+        if(actionState != null) {
             this.action = actionState.Action;
             this.actionSettings = actionState.Settings;
         }
 
-        if (this.parent != null)
-        {
-            state = this.parent.GetState();
-            // g(node)
+        if (this.parent != null){
             g = parent.GetPathCost();
-        }
-        else
-        {
-            state = planner.GetCurrentAgent().GetMemory().GetWorldState();
         }
 
         var nextAction = parent == null ? null : parent.action;
-        if (action != null)
-        {
-            // backward search does NOT support negative preconditions
-            // since in backward search we relax the problem all preconditions are valid but are added to the current goal
-            var preconditions = action.GetPreconditions(newGoal, actionSettings, nextAction);
-            goal = newGoal + preconditions;
+        if(action != null) {
 
-            var effects = action.GetEffects(newGoal, actionSettings, nextAction);
-            state += effects;
-            g += action.GetCost(newGoal, actionSettings, nextAction);
 
-            // removing current action effects from goal, no need to do with to the whole state
-            //  since the state is the sum of all the previous actions's effects.
-            var missingState = new ReGoapState();
-            goal.MissingDifference(effects, ref missingState);
-            goal = missingState;
+            //first step - subtract effects of action
+            var effects = action.GetEffects( parentGoal, actionSettings, nextAction );
+            try {
+                goal = parentGoal.Difference( effects );
 
-            // this is needed every step to make sure that any precondition is not already satisfied
-            //  by the world state
-            var worldMissingState = new ReGoapState();
-            goal.MissingDifference(planner.GetCurrentAgent().GetMemory().GetWorldState(), ref worldMissingState);
-            goal = worldMissingState;
-        }
-        else
-        {
-            var diff = new ReGoapState();
-            newGoal.MissingDifference(state, ref diff);
-            goal = diff;
-        }
+            } catch(ArgumentException e) {
+                Debug.Log( e );
+            }
+            //then add preconditions to the current goal state
+            var preconditions = action.GetPreconditions( parentGoal, actionSettings, nextAction );
+            goal = goal + preconditions;
+
+            
+            g += action.GetCost( parentGoal, actionSettings, nextAction );
+
+        } else goal = parentGoal;
         h = goal.Count;
         // f(node) = g(node) + h(node)
         cost = g + h * heuristicMultiplier;
     }
 
-    public float GetPathCost()
-    {
+    public float GetPathCost(){
         return g;
     }
 
-    public float GetHeuristicCost()
-    {
+    public float GetHeuristicCost(){
         return h;
     }
 
-    public ReGoapState GetState()
-    {
-        return state;
+    public ReGoapState GetState(){
+        return goal;
     }
 
-    public IEnumerator<ReGoapActionState> GetPossibleActionsEnumerator()
-    {
+#if DEBUG
+    public IEnumerator<ReGoapActionState> GetPossibleActionsEnumerator( bool includeInvalidAction = false ) {
+#else
+    public IEnumerator<ReGoapActionState> GetPossibleActionsEnumerator(){
+#endif
         var agent = planner.GetCurrentAgent();
         var actions = agent.GetActionsSet();
         foreach (var possibleAction in actions) {
@@ -96,25 +79,37 @@ public class ReGoapNode : INode<ReGoapState>
             var effects = possibleAction.GetEffects(goal, settings, action);
             if (possibleAction == action)
                 continue;
-            if (effects.HasAny(goal) && // any effect is the current goal
-                !goal.HasAnyConflict(effects) && // no effect is conflicting with the goal
-                !goal.HasAnyConflict(precond) && // no precondition is conflicting with the goal
-                possibleAction.CheckProceduralCondition(agent, settings, goal, parent != null ? parent.action : null))
+            if(effects.DoesFullfillGoal( goal ) && // any effect is the current goal
+                !goal.HasConflict( precond, effects ) &&
+                possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null )) {
+#if DEBUG
+                yield return new ReGoapActionState( possibleAction, settings ) { preconditions = precond, effects = effects };
+#else
                 yield return new ReGoapActionState( possibleAction, settings );
+#endif
+            }
+                #if DEBUG
+            else {
+                if(!effects.DoesFullfillGoal( goal ))
+                    yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
+                if(goal.HasConflict( precond, effects ))
+                    yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.CONFLICT, preconditions = precond, effects = effects };
+                if(possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null ))
+                    yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION, preconditions = precond, effects = effects };
+            }
+#endif
         }
     }
 
-    public List<INode<ReGoapState>> Expand()
-    {
+    public List<INode<ReGoapState>> Expand(){
         var result = new List<INode<ReGoapState>>();
         var possibleActions = GetPossibleActionsEnumerator();
         while (possibleActions.MoveNext())
         {
-            var newGoal = goal;
             result.Add(
                 new ReGoapNode(
                     planner,
-                    newGoal,
+                    goal,
                     this,
                     possibleActions.Current));
         }
@@ -158,9 +153,14 @@ public class ReGoapNode : INode<ReGoapState>
         return parent;
     }
 
+    /// <summary>
+    /// Indicates this node is goal (meaning it's action is first in the action list). This is true if current world state fulfills all goal variable
+    /// </summary>
+    /// <param name="goal"></param>
+    /// <returns></returns>
     public bool IsGoal(ReGoapState goal)
     {
-        return h == 0;
+        return goal.TryDifference( planner.GetCurrentAgent().GetMemory().GetWorldState() ).IsEmpty();
     }
 
     public float Priority { get; set; }

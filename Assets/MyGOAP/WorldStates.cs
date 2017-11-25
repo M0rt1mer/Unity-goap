@@ -5,16 +5,16 @@ using UnityEngine;
 
 public abstract class WorldStates {
 
-    public static WorldState<Vector3> STATE_POSITION = new WorldState<Vector3>();// = "isAtPosition";
-    public static WorldState<float> STATE_FLOAT_HUNGER = new WorldStateComparable<float,WorldStateLogicAtLeast>(); // "at least X saturation"
-    public static WorldState<string> STATE_HAND_LEFT = new WorldState<string>();
-    public static WorldState<string> STATE_HAND_RIGHT = new WorldState<string>();
+    public static WorldState<Vector3> STATE_POSITION = new WorldState<Vector3>( "position" );// = "isAtPosition";
+    public static WorldState<float> STATE_FLOAT_HUNGER = new WorldStateComparable<float,WorldStateLogicAtLeast>( "saturation" ); // "at least X saturation"
+    public static WorldState<string> STATE_HAND_LEFT = new WorldState<string>( "hand_left" );
+    public static WorldState<string> STATE_HAND_RIGHT = new WorldState<string>( "hand_right" );
 
 }
 
 public class WorldStateHasItem : WorldState<bool> {
     public readonly DBItem item;
-    public WorldStateHasItem( DBItem item ) {
+    public WorldStateHasItem( DBItem item ) : base( "hasItem:" + item.name ) {
         this.item = item;
         statesList[item] = this;
     }
@@ -32,7 +32,7 @@ public class WorldStateHasItem : WorldState<bool> {
 
 public class WorldStateHasItemCategory : WorldState<bool> {
     public readonly DBItemCategory category;
-    public WorldStateHasItemCategory( DBItemCategory category ) {
+    public WorldStateHasItemCategory( DBItemCategory category ) : base( "hasItemCat:" + category.name ) {
         this.category = category;
     }
 
@@ -55,6 +55,8 @@ public class WorldStateHasItemCategory : WorldState<bool> {
 public interface IWorldState{
 
     IWorldStateLogic logic { get; }
+    string name { get; }
+    Type GetValueType();
 
 }
 /// <summary>
@@ -66,13 +68,19 @@ public interface IWorldState{
 public class WorldState<InnerType> : IWorldState {
 
     public virtual IWorldStateLogic logic { protected set; get; }
+    public string name { protected set; get; }
 
-    public WorldState(){
+    public WorldState( string name ){
         this.logic = WorldStateLogicFactory.GetWorldStateLogic<WorldStateLogicEquals>();
+        this.name = name;
     }
 
     public override string ToString() {
         return string.Format( "WorldState[{0}]", typeof(InnerType).Name );
+    }
+
+    public Type GetValueType() {
+        return typeof( InnerType );
     }
 
 }
@@ -88,7 +96,7 @@ public class WorldStateComparable<InnerType,Logic> : WorldState<InnerType>
 
     public override IWorldStateLogic logic { protected set; get; }
 
-    public WorldStateComparable(){
+    public WorldStateComparable( string name ) : base( name ){
         this.logic = WorldStateLogicFactory.GetWorldStateLogic<Logic>();
     }
 
@@ -127,7 +135,7 @@ public interface IWorldStateLogic {
     /// <param name="from"></param>
     /// <param name="what"></param>
     /// <returns>Null if the variable should</returns>
-    object Difference(object from, object what);
+    object Difference(object from, object what, bool ignoreInvalid);
 
 }
 
@@ -135,7 +143,7 @@ public interface IWorldStateLogic {
 /// Creates singletons for all implementations of IWorldStateLogic. This allows WorldState<,> to define logic as generic, and check the logic's generic type constraints
 /// </summary>
 public abstract class WorldStateLogicFactory {
-    private static Dictionary<Type, IWorldStateLogic> singletons;
+    private static Dictionary<Type, IWorldStateLogic> singletons = new Dictionary<Type, IWorldStateLogic>();
 
     public static T GetWorldStateLogic<T>() where T : class, IWorldStateLogic, new(){
         if (!singletons.ContainsKey(typeof(T)))
@@ -153,7 +161,7 @@ public abstract class WorldStateLogic<DataType> : IWorldStateLogic {
 
     public abstract object Add(object a, object b);
     public abstract bool IsConflict(object goal, object effect);
-    public abstract object Difference(object from, object what);
+    public abstract object Difference(object from, object what, bool ignoreInvalid = false );
 }
 
 /// <summary>
@@ -171,12 +179,14 @@ public class WorldStateLogicEquals : WorldStateLogic<object>
         return goal == null || goal==effect || !goal.Equals(effect);
     }
 
-    public override object Difference(object from, object what){
+    public override object Difference(object from, object what, bool ignoreInvalid ) {
         if (what == null || from == null)
             return from;
         if (what == from || what.Equals(from)) //if subtracting excatly the same value, result is null
             return null;
-        return from;
+        if(ignoreInvalid) //if ignore invalid value, just return "from"
+            return from;
+        throw new ArgumentException( "Difference between two EQUAL objects cannot be computed" );
     }
 }
 
@@ -190,10 +200,11 @@ public class WorldStateLogicAtLeast : WorldStateLogic<IComparable>
     }
 
     public override bool IsConflict(object goal, object effect){
-        return ((IComparable)goal).CompareTo(effect) > 0;
+        return false;
+        //return ((IComparable)goal).CompareTo(effect) > 0;
     }
 
-    public override object Difference(object from, object what) {
+    public override object Difference(object from, object what, bool ignoreInvalid ) {
         if (what == null || from == null)
             return from;
         if (((IComparable)from).CompareTo(what) <= 0) //if subtracting bigger or equal, result is null. Otherwise original value
@@ -212,7 +223,7 @@ public class WorldStateLogicAtMost : WorldStateLogic<IComparable>
         return Utils.Min((IComparable)a, (IComparable)b);
     }
 
-    public override object Difference(object from, object what)
+    public override object Difference(object from, object what, bool ignoreInvalid )
     {
         if (what == null || from == null)
             return from;

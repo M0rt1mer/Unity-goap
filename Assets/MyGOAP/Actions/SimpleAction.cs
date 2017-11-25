@@ -111,7 +111,7 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
 
     public override sealed ReGoapState GetPreconditions( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null ) {
         ReGoapState variablePreconditions = GetPreconditionsFromGoal( goalState, settings as Settings );
-        if(variablePreconditions == null || variablePreconditions.GetValues().Count == 0)
+        if(variablePreconditions == null || variablePreconditions.IsEmpty() )
             return staticPreconditions;
         else {
             return staticPreconditions + variablePreconditions;

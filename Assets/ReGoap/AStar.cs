@@ -9,6 +9,11 @@ public class AStar<T>
     private readonly Dictionary<T, INode<T>> stateToNode;
     private readonly Dictionary<T, INode<T>> explored;
 
+#if DEBUG
+    public static Dictionary<T, INode<T>> lastSearchExplored;
+    public static FastPriorityQueue<INode<T>, T> lastSearchFrontier;
+#endif
+
     public AStar(int maxNodesToExpand = 1000)
     {
         frontier = new FastPriorityQueue<INode<T>, T>(maxNodesToExpand);
@@ -31,6 +36,10 @@ public class AStar<T>
             if (node.IsGoal(goal))
             {
                 ReGoapLogger.Log("[Astar] Success iterations: " + iterations);
+#if DEBUG
+                lastSearchExplored = explored;
+                lastSearchFrontier = frontier;
+#endif
                 return node;
             }
             explored[node.GetState()] = node;
@@ -39,6 +48,10 @@ public class AStar<T>
                 if (earlyExit && child.IsGoal(goal))
                 {
                     ReGoapLogger.Log("[Astar] (early exit) Success iterations: " + iterations);
+#if DEBUG
+                    lastSearchExplored = explored;
+                    lastSearchFrontier = frontier;
+#endif
                     return child;
                 }
                 var childCost = child.GetCost();
@@ -59,6 +72,10 @@ public class AStar<T>
             }
         }
         ReGoapLogger.LogWarning("[Astar] failed.");
+#if DEBUG
+        lastSearchExplored = explored;
+        lastSearchFrontier = frontier;
+#endif
         return null;
     }
 }

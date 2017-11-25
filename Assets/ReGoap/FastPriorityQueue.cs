@@ -9,7 +9,7 @@ namespace Priority_Queue
     /// An implementation of a min-Priority Queue using a heap.  Has O(1) .Contains()!
     /// See https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp/wiki/Getting-Started for more information
     /// </summary>
-    public sealed class FastPriorityQueue<T, U>
+    public sealed class FastPriorityQueue<T, U> : IEnumerable<T>
         where T : class, INode<U>
     {
         private int numNodes;
@@ -407,6 +407,11 @@ namespace Priority_Queue
                 }
             }
             return true;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            for(int i = 1; i <= numNodes; i++)
+                yield return nodes[i];
         }
     }
 }

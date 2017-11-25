@@ -38,29 +38,6 @@ public class ReGoapPlanner : IGoapPlanner
             possibleGoals.RemoveAt(possibleGoals.Count - 1);
             var goalState = currentGoal.GetGoalState();
 
-            // can't work with dynamic actions, of course
-            /*if (!settings.UsingDynamicActions)
-            {
-                var wantedGoalCheck = currentGoal.GetGoalState();
-                // we check if the goal can be archived through actions first, so we don't brute force it with A* if we can't
-                foreach (var action in goapAgent.GetActionsSet())
-                {
-                    action.Precalculations(goapAgent, goalState);
-                    if (!action.CheckProceduralCondition(goapAgent, wantedGoalCheck))
-                        continue;
-                    // check if the effects of all actions can archieve currentGoal
-                    var previous = wantedGoalCheck;
-                    wantedGoalCheck = new ReGoapState();
-                    previous.MissingDifference(action.GetEffects(wantedGoalCheck), ref wantedGoalCheck);
-                }
-                // can't validate goal 
-                if (wantedGoalCheck.Count > 0)
-                {
-                    currentGoal = null;
-                    continue;
-                }
-            }*/
-
             var leaf = (ReGoapNode)astar.Run(
                 new ReGoapNode(this, goalState, null, null), goalState, settings.MaxIterations, settings.PlanningEarlyExit);
             if (leaf == null)
