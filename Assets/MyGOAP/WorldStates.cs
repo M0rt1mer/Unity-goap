@@ -173,10 +173,20 @@ public class WorldStateLogicEquals : WorldStateLogic<object>
         throw new ArgumentException("Trying to add conflicting states");
     }
 
+    /// <summary>
+    /// returns true if values are different
+    /// </summary>
+    /// <param name="goal"></param>
+    /// <param name="effect"></param>
+    /// <returns></returns>
     public override bool IsConflict(object goal, object effect){
         if (goal == null && effect == null)
             return false;
-        return goal == null || goal==effect || !goal.Equals(effect);
+        if(goal == null)
+            return false;
+        if(goal != effect && !goal.Equals( effect )) //if at least one of them equals, it's fine
+            return true;
+        return false;
     }
 
     public override object Difference(object from, object what, bool ignoreInvalid ) {

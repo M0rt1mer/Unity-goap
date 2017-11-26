@@ -89,7 +89,7 @@ public class ReGoapNode : INode<ReGoapState>
 #endif
             }
                 #if DEBUG
-            else {
+            else if(includeInvalidAction){
                 if(!effects.DoesFullfillGoal( goal ))
                     yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
                 if(goal.HasConflict( precond, effects ))

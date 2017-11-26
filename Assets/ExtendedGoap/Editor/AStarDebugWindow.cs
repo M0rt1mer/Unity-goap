@@ -5,12 +5,31 @@ using UnityEditor;
 using System;
 using System.Linq;
 using System.Text;
+using SD.Tools.Algorithmia.GeneralDataStructures;
 
 public class AStarDebugWindow : EditorWindow {
 
     private Vector2 offset;
     private Vector2 drag;
     private Vector2 totalDrag;
+
+    static GUIStyle popupArea;
+    static GUIStyle action;
+    static GUIStyle worldState;
+
+    public void OnEnable() {
+        popupArea = new GUIStyle();
+        popupArea.normal.background = EditorGUIUtility.FindTexture( "OL box" );
+
+        //popupArea = GUI.skin.box;
+
+        action = new GUIStyle();
+        action.normal.background = EditorGUIUtility.FindTexture( "OL box" );
+
+        //action = GUI.skin.box;
+
+        worldState = new GUIStyle();
+    }
 
     [MenuItem( "Window/AStar debugger" )]
     static void Init() {
@@ -30,24 +49,25 @@ public class AStarDebugWindow : EditorWindow {
         ProcessEvents( Event.current );
 
         Repaint();
-
-
     }
 
-    private Dictionary<ReGoapNode, Rect> nodes = new Dictionary<ReGoapNode, Rect>();
-    private ReGoapNode selectedNode;
+
     private void DrawNodes() {
 
         if(AStar<ReGoapState>.lastSearchExplored != null) {
 
-            nodes.Clear();
-            int[] nodesPerLevel = new int[100]; 
+            MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes = new MultiValueDictionary<ReGoapNode, ReGoapNode>();
+            ReGoapNode root = null;
 
-            foreach(INode<ReGoapState> node in AStar<ReGoapState>.lastSearchExplored.Values.Concat( AStar<ReGoapState>.lastSearchFrontier) ){
-                if(!nodes.ContainsKey( node as ReGoapNode )) {
-                    DrawSingleNode( node as ReGoapNode, 0, nodes, nodesPerLevel );
+            foreach(INode<ReGoapState> inode in AStar<ReGoapState>.lastSearchExplored.Values.Concat( AStar<ReGoapState>.lastSearchFrontier) ){
+                if(inode.GetParent() != null)
+                    childNodes.Add( inode.GetParent() as ReGoapNode, inode as ReGoapNode );
+                else {
+                    root = inode as ReGoapNode;
                 }
             }
+
+            DrawSingleNode( root, 0, new int[100], childNodes );
 
         }
 
@@ -56,42 +76,58 @@ public class AStarDebugWindow : EditorWindow {
     private static GUIStyle failedCondition = new GUIStyle();
     private static Color failedBackgroundColor = new Color( 0.7f,0.57f,0.57f );
 
-    private void DrawSingleNode( ReGoapNode node, int level, Dictionary<ReGoapNode,Rect> positioning, int[] nodesPerLevel ) {
+    private Rect DrawSingleNode( ReGoapNode node, int level, int[] offsetInLevel, MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes ) {
 
-        int numLines = 0;
-        StringBuilder nodeText = new StringBuilder();
-        foreach(var value in ( node.GetState() as IEnumerable<KeyValuePair<IWorldState, object>>) ) {
-            nodeText.Append( value.Key.name + " : " + value.Value );
-            numLines++;
+        Rect position = new Rect( new Vector2(-300 * level,offsetInLevel[level] + 10) + offset, new Vector2(200,80) );
+
+        GUILayout.BeginArea( position, GUI.skin.box );
+        GUILayout.Space( 1 );
+        foreach(var value in (node.GetState() as IEnumerable<KeyValuePair<IWorldState, object>>)) {
+            GUILayout.Label( value.Key.name + " : " + value.Value );
         }
-        GUIContent textContent = new GUIContent( nodeText.ToString() );
-        Vector2 size = GUI.skin.box.CalcSize( textContent );
-        Rect position = new Rect( new Vector2(200 * level,nodesPerLevel[level] + 10) + offset, size );
-        nodesPerLevel[level] += numLines * 20 + 20;
-        GUI.Box( position, nodeText.ToString() );
+        GUILayout.EndArea();
+        offsetInLevel[level] += 100;
+
         if( position.Contains( Event.current.mousePosition ) ){
             List<ReGoapActionState> actions = new List<ReGoapActionState>();
             var enumerator = node.GetPossibleActionsEnumerator( true );
             while(enumerator.MoveNext())
                 actions.Add( enumerator.Current );
-            GUI.Box( new Rect( position.position - new Vector2( 310, 10 + actions.Count*55 ), new Vector2(320, actions.Count * 110 + 20 ) ), "" );
-            for(int i = 0; i < actions.Count; i++){
-                Color previousColor = GUI.backgroundColor;
-                if(actions[i].isValid)
-                    GUI.backgroundColor = failedBackgroundColor;
-                GUI.Box( new Rect( position.position - new Vector2( 300, actions.Count * 50 - i * 110 + 10 ), new Vector2( 300, 100 ) ), "" );
-                GUI.backgroundColor = previousColor;
-                GUILayout.BeginArea( new Rect( position.position - new Vector2( 300, actions.Count * 50 - i * 110 + 10 ), new Vector2( 300, 100 ) ) );
-                GUILayout.BeginVertical();
-                GUILayout.Label( actions[i].Action.ToString() );
-                GUILayout.Label( actions[i].preconditions.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.CONFLICT) ? failedCondition : GUIStyle.none );
-                GUILayout.Label( actions[i].effects.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP) ? failedCondition : GUIStyle.none );
-                if(actions[i].reason == ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION)
-                    GUILayout.Label( "PROCEDURAL CONDITION FAILED", failedCondition );
+
+            GUILayout.BeginArea( new Rect( position.position - new Vector2( 310, 10 + actions.Count * 55 ), new Vector2( 320, 1000 ) ) );
+            {
+                GUILayout.BeginVertical( GUI.skin.box );
+                {
+                    for(int i = 0; i < actions.Count; i++) {
+                        Color previousColor = GUI.backgroundColor;
+                        if(actions[i].isValid)
+                            GUI.backgroundColor = failedBackgroundColor;
+
+                        GUILayout.Space( 10 );
+                        //GUI.Box( new Rect( position.position - new Vector2( 300, actions.Count * 50 - i * 110 + 10 ), new Vector2( 300, 100 ) ), "" );
+                        GUI.backgroundColor = previousColor;
+
+                        GUILayout.BeginVertical( GUI.skin.box );
+                        {
+                            GUILayout.Label( actions[i].Action.ToString() );
+                            GUILayout.Label( actions[i].preconditions.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.CONFLICT) ? failedCondition : GUIStyle.none );
+                            GUILayout.Label( actions[i].effects.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP) ? failedCondition : GUIStyle.none );
+                            if(actions[i].reason == ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION)
+                                GUILayout.Label( "PROCEDURAL CONDITION FAILED", failedCondition );
+                        }
+                        GUILayout.EndVertical();
+                    }
+                    GUILayout.Space( 10 );
+                }
                 GUILayout.EndVertical();
-                GUILayout.EndArea();
             }
+            GUILayout.EndArea();
         }
+        foreach(var child in childNodes.GetValues( node, true )) {
+            Rect childPos = DrawSingleNode( child, level + 1, offsetInLevel, childNodes );
+            Handles.DrawLine( new Vector3( position.xMin, position.y, 0 ), new Vector3( childPos.xMax, childPos.y, 0 ) );
+        }
+        return position;
     }
 
     private void DrawGrid( float gridSpacing, float gridOpacity, Color gridColor ) {

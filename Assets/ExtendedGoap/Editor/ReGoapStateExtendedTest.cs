@@ -50,6 +50,16 @@ public class ReGoapStateTest {
         Assert.IsFalse( goal.HasConflict( prec, eff ) ); // no common state - no conflict
 
         goal.Clear(); prec.Clear(); eff.Clear();
+        goal.Set( wsEqual, 5 );
+        eff.Set( wsEqual, 5 );
+        Assert.IsFalse( goal.HasConflict( prec, eff ), "goal and effect same value" );
+
+        goal.Clear(); prec.Clear(); eff.Clear();
+        goal.Set( wsEqual, 5 );
+        eff.Set( wsEqual, 6 );
+        Assert.IsTrue( goal.HasConflict( prec, eff ), "goal and effect different value" );
+
+        goal.Clear(); prec.Clear(); eff.Clear();
 
         goal.Set(wsAtLeast, 5);
         eff.Set(wsAtLeast, 7);
@@ -81,6 +91,12 @@ public class ReGoapStateTest {
 
         Assert.IsFalse( goal.HasConflict( prec, eff ), "precond and effect share key" );
 
+        goal.Clear(); prec.Clear(); eff.Clear();
+        goal.Set( wsEqual, 10 );
+        eff.Set( wsEqual, 8 );
+        prec.Set( wsEqual, 7 );
+
+        Assert.IsTrue( goal.HasConflict( prec, eff ), "precond and effect share key, effect does not match goal" );
     }
 
     [Test]
