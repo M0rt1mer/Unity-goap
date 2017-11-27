@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Text;
 using SD.Tools.Algorithmia.GeneralDataStructures;
+using GraphVisualizer;
 
 public class AStarDebugWindow : EditorWindow {
 
@@ -43,7 +44,7 @@ public class AStarDebugWindow : EditorWindow {
         DrawGrid( 100, 0.4f, Color.gray );
 
         //UpdateGoapNodes( Selection.activeGameObject );
-        DrawNodes();
+        DrawNodesUsingGraphAPI();
 
         //ProcessNodeEvents( Event.current );
         ProcessEvents( Event.current );
@@ -51,6 +52,64 @@ public class AStarDebugWindow : EditorWindow {
         Repaint();
     }
 
+    private AStarDebugGraph graph;
+    private IGraphRenderer renderer;
+    private IGraphLayout layout;
+
+    private void DrawNodesUsingGraphAPI() {
+
+        if(AStar<ReGoapState>.lastSearchExplored != null) {
+
+            if(graph == null) {
+
+                MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes = new MultiValueDictionary<ReGoapNode, ReGoapNode>();
+                ReGoapNode root = null;
+
+                foreach(INode<ReGoapState> inode in AStar<ReGoapState>.lastSearchExplored.Values.Concat( AStar<ReGoapState>.lastSearchFrontier )) {
+                    if(inode.GetParent() != null)
+                        childNodes.Add( inode.GetParent() as ReGoapNode, inode as ReGoapNode );
+                    else {
+                        root = inode as ReGoapNode;
+                    }
+                }
+                graph = new AStarDebugGraph( childNodes, root );
+            }
+
+            graph.Refresh();
+            if(graph.IsEmpty()) {
+                ShowMessage( "No graph data" );
+                return;
+            }
+
+            if(layout == null)
+                layout = new ReingoldTilford();
+
+            layout.CalculateLayout( graph );
+
+            var graphRect = new Rect( 0 + offset.x, 0 + offset.y, 5000, 5000 );
+
+            if(renderer == null)
+                renderer = new AStarDebugGraphRenderer();
+
+            renderer.Draw( layout, graphRect, new GraphSettings() { maximumNodeSizeInPixels = 200, maximumNormalizedNodeSize = 0.8f, aspectRatio = 1.61f } );
+        }
+    }
+
+    private static void ShowMessage( string msg ) {
+        GUILayout.BeginVertical();
+        GUILayout.FlexibleSpace();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+
+        GUILayout.Label( msg );
+
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
+        GUILayout.FlexibleSpace();
+        GUILayout.EndVertical();
+    }
 
     private void DrawNodes() {
 
