@@ -13,10 +13,14 @@ public class AStarDebugWindow : EditorWindow {
     private Vector2 offset;
     private Vector2 drag;
     private Vector2 totalDrag;
+    private int fontSize;
+
 
     static GUIStyle popupArea;
     static GUIStyle action;
     static GUIStyle worldState;
+
+    static GUIStyle styleToolbar;
 
     public void OnEnable() {
         popupArea = new GUIStyle();
@@ -30,6 +34,12 @@ public class AStarDebugWindow : EditorWindow {
         //action = GUI.skin.box;
 
         worldState = new GUIStyle();
+
+        styleToolbar = new GUIStyle();
+        styleToolbar.normal.background = (Texture2D)Resources.Load( "Toolbar" );
+
+        offset = drag = totalDrag = Vector2.zero;
+        fontSize = 10;
     }
 
     [MenuItem( "Window/AStar debugger" )]
@@ -40,41 +50,75 @@ public class AStarDebugWindow : EditorWindow {
 
     void OnGUI() {
 
-        DrawGrid( 20, 0.2f, Color.gray );
-        DrawGrid( 100, 0.4f, Color.gray );
+        Rect toolbar = new Rect( 0, 0, position.width, 20 );
+        Rect canvas = new Rect( 0, 20, position.width, position.height - 20 );
+
+
+        DrawToolbar( toolbar );
+        DrawGrid( canvas, fontSize*2, 0.2f, Color.gray );
+        DrawGrid( canvas, fontSize*10, 0.4f, Color.gray );
 
         //UpdateGoapNodes( Selection.activeGameObject );
-        DrawNodesUsingGraphAPI();
+        DrawNodesUsingGraphAPI( canvas );
 
         //ProcessNodeEvents( Event.current );
-        ProcessEvents( Event.current );
+        ProcessEvents( canvas, Event.current );
 
         Repaint();
     }
 
+    int selectedAgent = 0;
+    int selectedSearch = 0;
+    AStarDebugRecording selectedRecording = null;
+
+    void DrawToolbar( Rect toolbarArea ) {
+
+        GUILayout.BeginArea( toolbarArea, styleToolbar );
+    
+        GUILayout.BeginHorizontal( GUILayout.ExpandWidth( true ) );
+
+        IReGoapAgent[] agentList = AStarDebugRecorder.recordings.Keys.ToArray();
+        selectedAgent = EditorGUILayout.Popup( selectedAgent, agentList.Select( x=> x.ToString() ).ToArray(), GUILayout.ExpandWidth(false) );
+        if(selectedAgent < agentList.Count()) {
+            AStarDebugRecording[] nodes = AStarDebugRecorder.recordings.GetValues( agentList[selectedAgent], false ).ToArray();
+            selectedSearch = EditorGUILayout.Popup( selectedSearch, nodes.Select( (node, index) => "search #"+index ).ToArray(), GUILayout.ExpandWidth( false ) );
+            selectedRecording = nodes[selectedSearch];
+        }
+
+        GUILayout.FlexibleSpace();
+
+        if(GUILayout.Button( "Reset view", GUILayout.Width( 100 ), GUILayout.Height( 18 ) )) {
+            offset = Vector2.zero;
+            fontSize = 10;
+        }
+
+        GUILayout.EndHorizontal();
+
+        GUILayout.EndArea();
+    }
+
     private AStarDebugGraph graph;
-    private IGraphRenderer renderer;
+    private AStarDebugGraphRenderer renderer;
     private IGraphLayout layout;
 
-    private void DrawNodesUsingGraphAPI() {
+    private AStarDebugRecording lastDisplayedRecording = null;
 
-        if(AStar<ReGoapState>.lastSearchExplored != null) {
+    private void DrawNodesUsingGraphAPI( Rect canvas ) {
 
-            if(graph == null) {
+        if( selectedRecording != null && selectedRecording != lastDisplayedRecording ) {
 
-                MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes = new MultiValueDictionary<ReGoapNode, ReGoapNode>();
-                ReGoapNode root = null;
+            MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes = new MultiValueDictionary<ReGoapNode, ReGoapNode>();
+            ReGoapNode root = null;
 
-                foreach(INode<ReGoapState> inode in AStar<ReGoapState>.lastSearchExplored.Values.Concat( AStar<ReGoapState>.lastSearchFrontier )) {
-                    if(inode.GetParent() != null)
-                        childNodes.Add( inode.GetParent() as ReGoapNode, inode as ReGoapNode );
-                    else {
-                        root = inode as ReGoapNode;
-                    }
+            foreach(INode<ReGoapState> inode in selectedRecording.search) {
+                if(inode.GetParent() != null)
+                    childNodes.Add( inode.GetParent() as ReGoapNode, inode as ReGoapNode );
+                else {
+                    root = inode as ReGoapNode;
                 }
-                graph = new AStarDebugGraph( childNodes, root );
             }
 
+            graph = new AStarDebugGraph( childNodes, root );
             graph.Refresh();
             if(graph.IsEmpty()) {
                 ShowMessage( "No graph data" );
@@ -86,12 +130,10 @@ public class AStarDebugWindow : EditorWindow {
 
             layout.CalculateLayout( graph );
 
-            var graphRect = new Rect( 0 + offset.x, 0 + offset.y, 5000, 5000 );
-
             if(renderer == null)
                 renderer = new AStarDebugGraphRenderer();
 
-            renderer.Draw( layout, graphRect, new GraphSettings() { maximumNodeSizeInPixels = 200, maximumNormalizedNodeSize = 0.8f, aspectRatio = 1.61f } );
+            renderer.Draw( layout, canvas, new GraphSettings() { maximumNodeSizeInPixels = 200, maximumNormalizedNodeSize = 1f, aspectRatio = 1.61f }, fontSize, offset );
         }
     }
 
@@ -113,12 +155,12 @@ public class AStarDebugWindow : EditorWindow {
 
     private void DrawNodes() {
 
-        if(AStar<ReGoapState>.lastSearchExplored != null) {
+        if( selectedRecording != null) {
 
             MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes = new MultiValueDictionary<ReGoapNode, ReGoapNode>();
             ReGoapNode root = null;
 
-            foreach(INode<ReGoapState> inode in AStar<ReGoapState>.lastSearchExplored.Values.Concat( AStar<ReGoapState>.lastSearchFrontier) ){
+            foreach(INode<ReGoapState> inode in selectedRecording.search){
                 if(inode.GetParent() != null)
                     childNodes.Add( inode.GetParent() as ReGoapNode, inode as ReGoapNode );
                 else {
@@ -189,33 +231,46 @@ public class AStarDebugWindow : EditorWindow {
         return position;
     }
 
-    private void DrawGrid( float gridSpacing, float gridOpacity, Color gridColor ) {
-        int widthDivs = Mathf.CeilToInt( position.width / gridSpacing );
-        int heightDivs = Mathf.CeilToInt( position.height / gridSpacing );
+    private void DrawGrid( Rect area, float gridSpacing, float gridOpacity, Color gridColor ) {
+        int widthDivs = Mathf.CeilToInt( area.width / gridSpacing );
+        int heightDivs = Mathf.CeilToInt( area.height / gridSpacing );
 
         Handles.BeginGUI();
         Handles.color = new Color( gridColor.r, gridColor.g, gridColor.b, gridOpacity );
 
         offset += drag * 0.5f;
-        Vector3 newOffset = new Vector3( offset.x % gridSpacing, offset.y % gridSpacing, 0 );
+        Vector3 newOffset = new Vector3( (offset.x % gridSpacing + gridSpacing) % gridSpacing + area.position.x, (offset.y  % gridSpacing + gridSpacing ) % gridSpacing + area.position.y, 0 );
 
         for(int i = 0; i < widthDivs; i++)
-            Handles.DrawLine( new Vector3( gridSpacing * i, -gridSpacing, 0 ) + newOffset, new Vector3( gridSpacing * i, position.height, 0f ) + newOffset );
+            Handles.DrawLine( new Vector3( gridSpacing * i + newOffset.x, area.yMin, 0 ), new Vector3( gridSpacing * i + newOffset.x, area.yMax, 0f ) );
 
         for(int j = 0; j < heightDivs; j++)
-            Handles.DrawLine( new Vector3( -gridSpacing, gridSpacing * j, 0 ) + newOffset, new Vector3( position.width, gridSpacing * j, 0f ) + newOffset );
+            Handles.DrawLine( new Vector3( area.xMin, gridSpacing * j + newOffset.y, 0 ), new Vector3( area.xMax, gridSpacing * j + newOffset.y, 0f ) );
 
         Handles.color = Color.white;
         Handles.EndGUI();
     }
 
-    private void ProcessEvents( Event e ) {
+    private void ProcessEvents( Rect area, Event e ) {
         drag = Vector2.zero;
 
         switch(e.type) {
             case EventType.MouseDrag:
                 if(e.button == 0) {
                     OnDrag( e.delta );
+                }
+                break;
+            case EventType.ScrollWheel:
+                if(Event.current.delta.y > 0) {
+                    if(fontSize > 2) {
+                        fontSize--;
+                        offset = offset - (Event.current.mousePosition - offset) * (fontSize/(fontSize+1f) - 1);
+                    }
+                } else {
+                    if(fontSize <15) {
+                        fontSize++;
+                        offset = offset - (Event.current.mousePosition - offset) * (fontSize / (fontSize - 1f) - 1);
+                    }
                 }
                 break;
         }

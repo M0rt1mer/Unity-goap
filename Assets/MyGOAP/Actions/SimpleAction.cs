@@ -127,6 +127,9 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     }
     #endregion
 
+    public override string ToString() {
+        return name;
+    }
 
     #region =========================================================================================================================== not implemented
     //not used, therefore not implemented

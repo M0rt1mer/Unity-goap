@@ -6,10 +6,10 @@ using UnityEngine;
 public class ReGoapNode : INode<ReGoapState>
 {
     private readonly float cost;
-    private readonly IGoapPlanner planner;
-    private readonly ReGoapNode parent;
-    private readonly IReGoapAction action;
-    private readonly IReGoapActionSettings actionSettings;
+    public readonly IGoapPlanner planner;
+    public readonly ReGoapNode parent;
+    public readonly IReGoapAction action;
+    public readonly IReGoapActionSettings actionSettings;
     private readonly ReGoapState goal;
     private readonly float g;
     private readonly float h;
@@ -160,7 +160,7 @@ public class ReGoapNode : INode<ReGoapState>
     /// <returns></returns>
     public bool IsGoal(ReGoapState goal)
     {
-        return goal.TryDifference( planner.GetCurrentAgent().GetMemory().GetWorldState() ).IsEmpty();
+        return this.goal.TryDifference( planner.GetCurrentAgent().GetMemory().GetWorldState() ).IsEmpty();
     }
 
     public float Priority { get; set; }

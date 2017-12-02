@@ -9,7 +9,7 @@ using UnityEngine.AI;
 /// Templating is done to allow further overriding
 /// </summary>
 /// <typeparam name="Settings"></typeparam>
-class SimpleActionGoto<Settings> : SimpleAction<Settings> where Settings: SimpleActionSettings, new() {
+public class SimpleActionGoto<Settings> : SimpleAction<Settings> where Settings: SimpleActionSettings, new() {
 
     protected override void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref List<IWorldState> parametrizedEffects, ref ReGoapState staticPreconditions ) {
         parametrizedEffects.Add( WorldStates.STATE_POSITION );
@@ -34,4 +34,4 @@ class SimpleActionGoto<Settings> : SimpleAction<Settings> where Settings: Simple
 }
 
 [CreateAssetMenu(menuName = "GOAP/SimpleActions/GoTo")]
-class SimpleActionGoTo : SimpleActionGoto<SimpleActionSettings> { }
+public class SimpleActionGoTo : SimpleActionGoto<SimpleActionSettings> { }

@@ -9,11 +9,6 @@ public class AStar<T>
     private readonly Dictionary<T, INode<T>> stateToNode;
     private readonly Dictionary<T, INode<T>> explored;
 
-#if DEBUG
-    public static Dictionary<T, INode<T>> lastSearchExplored;
-    public static FastPriorityQueue<INode<T>, T> lastSearchFrontier;
-#endif
-
     public AStar(int maxNodesToExpand = 1000)
     {
         frontier = new FastPriorityQueue<INode<T>, T>(maxNodesToExpand);
@@ -37,8 +32,7 @@ public class AStar<T>
             {
                 ReGoapLogger.Log("[Astar] Success iterations: " + iterations);
 #if DEBUG
-                lastSearchExplored = explored;
-                lastSearchFrontier = frontier;
+                AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Concat( new INode<T>[] { node } ).Cast<ReGoapNode>() ) );
 #endif
                 return node;
             }
@@ -49,8 +43,7 @@ public class AStar<T>
                 {
                     ReGoapLogger.Log("[Astar] (early exit) Success iterations: " + iterations);
 #if DEBUG
-                    lastSearchExplored = explored;
-                    lastSearchFrontier = frontier;
+                    AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Concat( new INode<T>[] { child } ).Cast<ReGoapNode>() ) );
 #endif
                     return child;
                 }
@@ -73,8 +66,7 @@ public class AStar<T>
         }
         ReGoapLogger.LogWarning("[Astar] failed.");
 #if DEBUG
-        lastSearchExplored = explored;
-        lastSearchFrontier = frontier;
+        AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Cast<ReGoapNode>() ) );
 #endif
         return null;
     }

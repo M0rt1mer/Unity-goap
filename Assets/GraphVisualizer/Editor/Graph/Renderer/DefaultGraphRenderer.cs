@@ -33,7 +33,7 @@ public class DefaultGraphRenderer : IGraphRenderer
 
     private readonly Dictionary<string, NodeTypeLegend> m_LegendForType = new Dictionary<string, NodeTypeLegend>();
 
-    private Node m_SelectedNode;
+    protected Node m_SelectedNode;
 
     private Texture2D m_ColorBar;
 
@@ -48,17 +48,21 @@ public class DefaultGraphRenderer : IGraphRenderer
         InitializeStyles();
     }
 
-    public void Draw(IGraphLayout graphLayout, Rect drawingArea)
+    public void Draw(IGraphLayout graphLayout, Rect drawingArea )
     {
         GraphSettings defaults;
         defaults.maximumNormalizedNodeSize = s_DefaultMaximumNormalizedNodeSize;
         defaults.maximumNodeSizeInPixels = s_DefaultMaximumNodeSizeInPixels;
         defaults.aspectRatio = s_DefaultAspectRatio;
         defaults.showLegend = true;
-        Draw(graphLayout, drawingArea, defaults);
+        Draw(graphLayout, drawingArea, defaults, 10, Vector2.zero);
     }
 
-    public void Draw(IGraphLayout graphLayout, Rect totalDrawingArea, GraphSettings graphSettings)
+    public void Draw( IGraphLayout graphLayout, Rect drawingArea, GraphSettings graphSettings ) {
+        Draw( graphLayout, drawingArea, graphSettings, 10, Vector2.zero );
+    }
+
+    public void Draw(IGraphLayout graphLayout, Rect totalDrawingArea, GraphSettings graphSettings, int fontSize, Vector2 offset)
     {
         var legendArea = new Rect();
         var drawingArea = new Rect(totalDrawingArea);
@@ -91,7 +95,7 @@ public class DefaultGraphRenderer : IGraphRenderer
             }
         }
 
-        DrawGraph(graphLayout, drawingArea, graphSettings);
+        DrawGraph(graphLayout, drawingArea, graphSettings, fontSize, offset);
     }
 
     private void InitializeStyles()
@@ -285,7 +289,7 @@ public class DefaultGraphRenderer : IGraphRenderer
     }
 
     // Draw the graph and returns the selected Node if there's any.
-    private void DrawGraph(IGraphLayout graphLayout, Rect drawingArea, GraphSettings graphSettings)
+    protected virtual void DrawGraph(IGraphLayout graphLayout, Rect drawingArea, GraphSettings graphSettings, int fontSize, Vector2 offset)
     {
         // add border, except on right-hand side where the legend will provide necessary padding
         drawingArea = new Rect(drawingArea.x + s_BorderSize,
@@ -303,7 +307,7 @@ public class DefaultGraphRenderer : IGraphRenderer
         b.Expand(new Vector3(graphSettings.maximumNormalizedNodeSize, graphSettings.maximumNormalizedNodeSize, 0));
 
         var scale = new Vector2(drawingArea.width / b.size.x, drawingArea.height / b.size.y);
-        var offset = new Vector2(-b.min.x, -b.min.y);
+        offset = new Vector2(-b.min.x, -b.min.y);
 
         Vector2 nodeSize = ComputeNodeSize(scale, graphSettings);
 
@@ -372,7 +376,7 @@ public class DefaultGraphRenderer : IGraphRenderer
     }
 
     // Apply node constraints to node size
-    private static Vector2 ComputeNodeSize(Vector2 scale, GraphSettings graphSettings)
+    protected static Vector2 ComputeNodeSize(Vector2 scale, GraphSettings graphSettings)
     {
         var extraTickness = (s_SelectedNodeThickness + s_ActiveNodeThickness) * 2.0f;
         var nodeSize = new Vector2(graphSettings.maximumNormalizedNodeSize * scale.x - extraTickness,
@@ -426,7 +430,7 @@ public class DefaultGraphRenderer : IGraphRenderer
     }
 
     // Convert vertex position from normalized layout to render rect
-    private static Vector2 ScaleVertex(Vector2 v, Vector2 offset, Vector2 scaleFactor)
+    protected static Vector2 ScaleVertex(Vector2 v, Vector2 offset, Vector2 scaleFactor)
     {
         return new Vector2((v.x + offset.x) * scaleFactor.x, (v.y + offset.y) * scaleFactor.y);
     }
