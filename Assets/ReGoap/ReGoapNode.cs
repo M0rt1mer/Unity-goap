@@ -94,7 +94,7 @@ public class ReGoapNode : INode<ReGoapState>
                     yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
                 if(goal.HasConflict( precond, effects ))
                     yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.CONFLICT, preconditions = precond, effects = effects };
-                if(possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null ))
+                if(!possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null ))
                     yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION, preconditions = precond, effects = effects };
             }
 #endif

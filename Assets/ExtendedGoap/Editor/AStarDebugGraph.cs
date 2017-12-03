@@ -62,9 +62,18 @@ public class AStarDebugGraph : Graph {
 
 public class AStarDebugGraphRenderer : DefaultGraphRenderer {
 
+    private static Color failedBackgroundColor = new Color( 0.7f, 0.57f, 0.57f );
+    private GUIStyle failedCondition;
+
+    public AStarDebugGraphRenderer() {
+        failedCondition = new GUIStyle() { normal = { textColor = Color.red } };
+    }
+
     protected override void DrawNode( Rect nodeRect, Node node, bool selected ) {
         DrawRect( nodeRect, node.GetColor(), node.ToString(), node.active, selected );
     }
+
+    private Vertex selectedVertex;
 
     protected override void DrawGraph( IGraphLayout graphLayout, Rect drawingArea, GraphSettings graphSettings, int fontSize, Vector2 offset ) {
         // add border, except on right-hand side where the legend will provide necessary padding
@@ -103,7 +112,7 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
         Event currentEvent = Event.current;
 
         bool oldSelectionFound = false;
-        Node newSelectedNode = null;
+        Vertex newSelectedVertex = null;
 
         foreach(Vertex v in graphLayout.vertices) {
             Vector2 nodeCenter = ScaleVertex( v.position, offset, scale ) - nodeSize / 2;
@@ -118,8 +127,8 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
                 }
             }
 
-            bool currentSelection = (m_SelectedNode != null)
-                && v.node.content.Equals( m_SelectedNode.content ); // Make sure to use Equals() and not == to call any overriden comparison operator in the content type.
+            bool currentSelection = (selectedVertex != null)
+                && v.node.content.Equals( selectedVertex.node.content ); // Make sure to use Equals() and not == to call any overriden comparison operator in the content type.
 
             DrawNode( nodeRect, v.node, currentSelection || clicked );
 
@@ -128,18 +137,60 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
                 oldSelectionFound = true;
             } else if(clicked) {
                 // Just Selected a new node.
-                newSelectedNode = v.node;
+                newSelectedVertex = v;
             }
         }
 
-        if(newSelectedNode != null) {
-            m_SelectedNode = newSelectedNode;
+        if(newSelectedVertex != null) {
+            selectedVertex = newSelectedVertex;
         } else if(!oldSelectionFound) {
-            m_SelectedNode = null;
+            selectedVertex = null;
         }
 
         GUI.EndGroup();
+
+        if(selectedVertex != null) {
+            DrawPossibleActions( ScaleVertex( selectedVertex.position, offset, scale ) );
+        }
+
     }
+
+    private void DrawPossibleActions( Vector2 position ) {
+        List<ReGoapActionState> actions = new List<ReGoapActionState>();
+        var enumerator = (selectedVertex.node.content as ReGoapNode).GetPossibleActionsEnumerator( true );
+        while(enumerator.MoveNext())
+            actions.Add( enumerator.Current );
+
+        GUILayout.BeginArea( new Rect( position - new Vector2( 310, 10 + actions.Count * 55 ), new Vector2( 320, 1000 ) ) );
+        {
+            GUILayout.BeginVertical( GUI.skin.box );
+            {
+                for(int i = 0; i < actions.Count; i++) {
+                    Color previousColor = GUI.backgroundColor;
+                    if(actions[i].isValid)
+                        GUI.backgroundColor = failedBackgroundColor;
+
+                    GUILayout.Space( 10 );
+                    //GUI.Box( new Rect( position.position - new Vector2( 300, actions.Count * 50 - i * 110 + 10 ), new Vector2( 300, 100 ) ), "" );
+                    GUI.backgroundColor = previousColor;
+
+                    GUILayout.BeginVertical( GUI.skin.box );
+                    {
+                        GUILayout.Label( actions[i].Action.ToString() );
+                        GUILayout.Label( actions[i].preconditions.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.CONFLICT) ? failedCondition : GUIStyle.none );
+                        GUILayout.Label( actions[i].effects.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP) ? failedCondition : GUIStyle.none );
+                        if(actions[i].reason == ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION)
+                            GUILayout.Label( "PROCEDURAL CONDITION FAILED", failedCondition );
+                    }
+                    GUILayout.EndVertical();
+                }
+                GUILayout.Space( 10 );
+            }
+            GUILayout.EndVertical();
+        }
+        GUILayout.EndArea();
+    }
+
     protected new Vector2 ScaleVertex( Vector2 v, Vector2 offset, Vector2 scaleFactor ) {
         return new Vector2( v.x * scaleFactor.x, v.y * scaleFactor.y ) + offset;
     }
