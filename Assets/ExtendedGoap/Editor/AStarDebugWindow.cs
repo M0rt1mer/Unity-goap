@@ -126,7 +126,7 @@ public class AStarDebugWindow : EditorWindow {
             }
 
             if(layout == null)
-                layout = new ReingoldTilford();
+                layout = new ReingoldTilford(false);
 
             layout.CalculateLayout( graph );
 
@@ -153,83 +153,8 @@ public class AStarDebugWindow : EditorWindow {
         GUILayout.EndVertical();
     }
 
-    private void DrawNodes() {
-
-        if( selectedRecording != null) {
-
-            MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes = new MultiValueDictionary<ReGoapNode, ReGoapNode>();
-            ReGoapNode root = null;
-
-            foreach(INode<ReGoapState> inode in selectedRecording.search){
-                if(inode.GetParent() != null)
-                    childNodes.Add( inode.GetParent() as ReGoapNode, inode as ReGoapNode );
-                else {
-                    root = inode as ReGoapNode;
-                }
-            }
-
-            DrawSingleNode( root, 0, new int[100], childNodes );
-
-        }
-
-    }
-
     private static GUIStyle failedCondition = new GUIStyle();
     private static Color failedBackgroundColor = new Color( 0.7f,0.57f,0.57f );
-
-    private Rect DrawSingleNode( ReGoapNode node, int level, int[] offsetInLevel, MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes ) {
-
-        Rect position = new Rect( new Vector2(-300 * level,offsetInLevel[level] + 10) + offset, new Vector2(200,80) );
-
-        GUILayout.BeginArea( position, GUI.skin.box );
-        GUILayout.Space( 1 );
-        foreach(var value in (node.GetState() as IEnumerable<KeyValuePair<IWorldState, object>>)) {
-            GUILayout.Label( value.Key.name + " : " + value.Value );
-        }
-        GUILayout.EndArea();
-        offsetInLevel[level] += 100;
-
-        if( position.Contains( Event.current.mousePosition ) ){
-            List<ReGoapActionState> actions = new List<ReGoapActionState>();
-            var enumerator = node.GetPossibleActionsEnumerator( true );
-            while(enumerator.MoveNext())
-                actions.Add( enumerator.Current );
-
-            GUILayout.BeginArea( new Rect( position.position - new Vector2( 310, 10 + actions.Count * 55 ), new Vector2( 320, 1000 ) ) );
-            {
-                GUILayout.BeginVertical( GUI.skin.box );
-                {
-                    for(int i = 0; i < actions.Count; i++) {
-                        Color previousColor = GUI.backgroundColor;
-                        if(actions[i].isValid)
-                            GUI.backgroundColor = failedBackgroundColor;
-
-                        GUILayout.Space( 10 );
-                        //GUI.Box( new Rect( position.position - new Vector2( 300, actions.Count * 50 - i * 110 + 10 ), new Vector2( 300, 100 ) ), "" );
-                        GUI.backgroundColor = previousColor;
-
-                        GUILayout.BeginVertical( GUI.skin.box );
-                        {
-                            GUILayout.Label( actions[i].Action.ToString() );
-                            GUILayout.Label( actions[i].preconditions.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.CONFLICT) ? failedCondition : GUIStyle.none );
-                            GUILayout.Label( actions[i].effects.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP) ? failedCondition : GUIStyle.none );
-                            if(actions[i].reason == ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION)
-                                GUILayout.Label( "PROCEDURAL CONDITION FAILED", failedCondition );
-                        }
-                        GUILayout.EndVertical();
-                    }
-                    GUILayout.Space( 10 );
-                }
-                GUILayout.EndVertical();
-            }
-            GUILayout.EndArea();
-        }
-        foreach(var child in childNodes.GetValues( node, true )) {
-            Rect childPos = DrawSingleNode( child, level + 1, offsetInLevel, childNodes );
-            Handles.DrawLine( new Vector3( position.xMin, position.y, 0 ), new Vector3( childPos.xMax, childPos.y, 0 ) );
-        }
-        return position;
-    }
 
     private void DrawGrid( Rect area, float gridSpacing, float gridOpacity, Color gridColor ) {
         int widthDivs = Mathf.CeilToInt( area.width / gridSpacing );

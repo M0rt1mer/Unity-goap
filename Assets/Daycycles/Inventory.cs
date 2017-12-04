@@ -18,12 +18,29 @@ public class Inventory : GoapSensor {
 
     public override void UpdateSensor() {
         base.UpdateSensor();
+
+        Dictionary<DBItem, int> itemCounts = new Dictionary<DBItem, int>();
+        Dictionary<DBItemCategory, int> categoryCounts = new Dictionary<DBItemCategory, int>();
+
         var worldState = GetMemory().GetWorldState();
         foreach(var item in items) {
-            worldState.Set( WorldStateHasItem.GetStateForItem(item.sourceItem), true );
-            foreach (var category in item.sourceItem.categories )
-                worldState.Set( WorldStateHasItemCategory.GetStateForItem( category ) , true);
+            if(!itemCounts.ContainsKey( item.sourceItem ))
+                itemCounts.Add( item.sourceItem, 1 );
+            else
+                itemCounts.Add( item.sourceItem, itemCounts[item.sourceItem] + 1 );
+
+            foreach(var category in item.sourceItem.categories)
+                if(!categoryCounts.ContainsKey( category ))
+                    categoryCounts.Add( category, 1 );
+                else
+                    categoryCounts.Add( category, categoryCounts[category] + 1 );
         }
+
+        foreach(var pair in itemCounts)
+            worldState.Set( WorldStateMinItem.GetStateForItem( pair.Key ), pair.Value );
+        foreach(var pair in categoryCounts)
+            worldState.Set( WorldStateMinItemCategory.GetStateForItem( pair.Key ), pair.Value );
+
     }
 
     public static string StringTrimSuffix( string instring ) {

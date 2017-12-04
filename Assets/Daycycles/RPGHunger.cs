@@ -8,7 +8,7 @@ public class RPGHunger : GoapSensor {
     public float saturationLevel = 0;
 
     public override void UpdateSensor() {
-        GetMemory().GetWorldState().Set( WorldStates.STATE_FLOAT_HUNGER, saturationLevel );
+        GetMemory().GetWorldState().Set( WorldStates.STATE_FLOAT_SATURATION, saturationLevel );
     }
 
     public void EatItem( string item ) {

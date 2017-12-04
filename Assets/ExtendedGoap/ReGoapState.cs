@@ -89,11 +89,15 @@ public class ReGoapState : ICloneable, IEnumerable<IWorldState>, IEnumerable<Key
         ReGoapState newState = new ReGoapState();
         lock(values) lock(subtractor.values) {
                 foreach(var key in values.Keys) {
-                    if(subtractor.HasKey( key )) {
+                    if(subtractor.HasKey( key )) { //value exists
                         var difference = key.logic.Difference( values[key], subtractor.values[key], ignoreFailuje );
                         if(difference != null)
                             newState.values.Add( key, difference );
-                    } else
+                    } else if(subtractor is IWorldStateDefaultable) { //value doesn't exists BUT subtractor has default value
+                        var difference = key.logic.Difference( values[key], (subtractor as IWorldStateDefaultable).GetDefaultValue(), ignoreFailuje );
+                        if(difference != null)
+                            newState.values.Add( key, difference );
+                    } else //value doesn't exist - don't subtract
                         newState.values.Add( key, values[key] );
                 }
             }
@@ -108,9 +112,9 @@ public class ReGoapState : ICloneable, IEnumerable<IWorldState>, IEnumerable<Key
     {
         lock (values) lock (goal.values)
         {
-            foreach (var pair in goal.values){
-                    if(goal.HasKey( pair.Key ))
-                        if(pair.Key.logic.Difference( goal.values[pair.Key], pair.Value, true ) == null ) //if variable gets canceled out, it means that it fulfilled goal
+            foreach ( var pair in goal.values ){
+                    if( goal.HasKey( pair.Key ) )
+                        if( pair.Key.logic.Difference( goal.values[pair.Key], pair.Value, true ) == null ) //if variable gets canceled out, it means that it fulfilled goal
                             return true;
             }
             return false;

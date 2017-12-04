@@ -177,9 +177,11 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
                     GUILayout.BeginVertical( GUI.skin.box );
                     {
                         GUILayout.Label( actions[i].Action.ToString() );
-                        GUILayout.Label( actions[i].preconditions.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.CONFLICT) ? failedCondition : GUIStyle.none );
-                        GUILayout.Label( actions[i].effects.ToString(), (actions[i].reason == ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP) ? failedCondition : GUIStyle.none );
-                        if(actions[i].reason == ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION)
+                        GUILayout.Label( actions[i].preconditions.ToString(), 
+                            (!actions[i].isValid && actions[i].reason == ReGoapActionState.InvalidReason.CONFLICT) ? failedCondition : GUIStyle.none );
+                        GUILayout.Label( actions[i].effects.ToString(), 
+                            (!actions[i].isValid && actions[i].reason == ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP) ? failedCondition : GUIStyle.none );
+                        if(!actions[i].isValid && actions[i].reason == ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION)
                             GUILayout.Label( "PROCEDURAL CONDITION FAILED", failedCondition );
                     }
                     GUILayout.EndVertical();

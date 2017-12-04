@@ -6,41 +6,41 @@ using UnityEngine;
 public abstract class WorldStates {
 
     public static WorldState<Vector3> STATE_POSITION = new WorldState<Vector3>( "position" );// = "isAtPosition";
-    public static WorldState<float> STATE_FLOAT_HUNGER = new WorldStateComparable<float,WorldStateLogicAtLeast>( "saturation" ); // "at least X saturation"
+    public static WorldState<float> STATE_FLOAT_SATURATION = new WorldStateComparable<float,WorldStateLogicAtLeast>( "saturation" ); // "at least X saturation"
     public static WorldState<string> STATE_HAND_LEFT = new WorldState<string>( "hand_left" );
     public static WorldState<string> STATE_HAND_RIGHT = new WorldState<string>( "hand_right" );
 
 }
 
-public class WorldStateHasItem : WorldState<bool> {
+public class WorldStateMinItem : WorldStateComparableDefaultable<int,WorldStateLogicAtLeast> {
     public readonly DBItem item;
-    public WorldStateHasItem( DBItem item ) : base( "hasItem:" + item.name ) {
+    public WorldStateMinItem( DBItem item ) : base( "hasItem:" + item.name, 0 ) {
         this.item = item;
         statesList[item] = this;
     }
 
-    public static Dictionary<DBItem, WorldStateHasItem> statesList = new Dictionary<DBItem, WorldStateHasItem>();
+    public static Dictionary<DBItem, WorldStateMinItem> statesList = new Dictionary<DBItem, WorldStateMinItem>();
 
-    public static WorldStateHasItem GetStateForItem( DBItem item ) {
+    public static WorldStateMinItem GetStateForItem( DBItem item ) {
         if( !statesList.ContainsKey( item ) ) {
-            statesList.Add( item, new WorldStateHasItem( item ) );
+            statesList.Add( item, new WorldStateMinItem( item ) );
         }
         return statesList[item];
     }
 
 }
 
-public class WorldStateHasItemCategory : WorldState<bool> {
+public class WorldStateMinItemCategory : WorldStateComparableDefaultable<int,WorldStateLogicAtLeast> {
     public readonly DBItemCategory category;
-    public WorldStateHasItemCategory( DBItemCategory category ) : base( "hasItemCat:" + category.name ) {
+    public WorldStateMinItemCategory( DBItemCategory category ) : base( "hasItemCat:" + category.name, 0 ) {
         this.category = category;
     }
 
-    public static Dictionary<DBItemCategory, WorldStateHasItemCategory> statesList = new Dictionary<DBItemCategory, WorldStateHasItemCategory>();
+    public static Dictionary<DBItemCategory, WorldStateMinItemCategory> statesList = new Dictionary<DBItemCategory, WorldStateMinItemCategory>();
 
-    public static WorldStateHasItemCategory GetStateForItem( DBItemCategory item ) {
+    public static WorldStateMinItemCategory GetStateForItem( DBItemCategory item ) {
         if(!statesList.ContainsKey( item )) {
-            statesList.Add( item, new WorldStateHasItemCategory( item ) );
+            statesList.Add( item, new WorldStateMinItemCategory( item ) );
         }
         return statesList[item];
     }
@@ -59,6 +59,23 @@ public interface IWorldState{
     Type GetValueType();
 
 }
+
+public interface IWorldStateDefaultable {
+
+    object GetDefaultValue();
+
+}
+
+/// <summary>
+/// Marks a IWorldState 
+/// </summary>
+/// <typeparam name="InnerType"></typeparam>
+public interface IWorldStateDefaultable<InnerType> : IWorldState, IWorldStateDefaultable {
+
+    InnerType GetDefaultValueTyped();
+
+}
+
 /// <summary>
 /// WorldState is an observable state of the world, which NPC can use to reason about their actions.
 /// WorldState has a InnerType - all observations must be of this type (this is enforced by ReGoapStateExtended)
@@ -106,6 +123,26 @@ public class WorldStateComparable<InnerType,Logic> : WorldState<InnerType>
 
 }
 
+public class WorldStateComparableDefaultable<InnerType, Logic> : WorldStateComparable<InnerType, Logic>, IWorldStateDefaultable<InnerType>
+            where InnerType : IComparable
+            where Logic : WorldStateLogic<IComparable>, new() {
+
+    InnerType defaultValue;
+
+    public WorldStateComparableDefaultable( string name, InnerType defaultValue ) : base( name ){
+        this.logic = WorldStateLogicFactory.GetWorldStateLogic<Logic>();
+        this.defaultValue = defaultValue;
+    }
+
+    public object GetDefaultValue() {
+        return defaultValue;
+    }
+
+    public InnerType GetDefaultValueTyped() {
+        return defaultValue;
+    }
+}
+
 #endregion
 
 #region IWorldStateLogic
@@ -144,7 +181,6 @@ public interface IWorldStateLogic {
 /// </summary>
 public abstract class WorldStateLogicFactory {
     private static Dictionary<Type, IWorldStateLogic> singletons = new Dictionary<Type, IWorldStateLogic>();
-
     public static T GetWorldStateLogic<T>() where T : class, IWorldStateLogic, new(){
         if (!singletons.ContainsKey(typeof(T)))
             singletons.Add(typeof(T), new T());

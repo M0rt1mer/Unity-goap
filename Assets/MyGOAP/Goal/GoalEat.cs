@@ -8,12 +8,12 @@ public class GoalEat : GoapGoal {
 
     protected override void Awake() {
         base.Awake();
-        goal.Set<float>( WorldStates.STATE_FLOAT_HUNGER, 1f );
+        goal.Set<float>( WorldStates.STATE_FLOAT_SATURATION, 1f );
         memory = GetComponent<GoapMemory>();
     }
 
     public override float GetPriority() {
-        return 1 - memory.GetWorldState().Get<float>( WorldStates.STATE_FLOAT_HUNGER );
+        return 1 - memory.GetWorldState().Get<float>( WorldStates.STATE_FLOAT_SATURATION );
     }
 
 }

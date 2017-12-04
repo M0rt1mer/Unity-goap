@@ -30,24 +30,26 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     public string name;
 
     private ReGoapState staticEffects;
-    List<IWorldState> parametrizedEffects;
+    private ReGoapState parametrizedEffectsWithDefaults;
     private ReGoapState staticPreconditions;
 
     public void OnEnable(){
         staticEffects = new ReGoapState();
         staticPreconditions = new ReGoapState();
-        parametrizedEffects = new List<IWorldState>();
-        InitializePreconditionsAndEffects( ref staticEffects, ref parametrizedEffects, ref staticPreconditions );
+        parametrizedEffectsWithDefaults = new ReGoapState();
+        InitializePreconditionsAndEffects( ref staticEffects, ref parametrizedEffectsWithDefaults, ref staticPreconditions );
     }
 
     #region ========================================================================================================  overridable
     /// <summary>
     /// Can be overriden (likely will be overriden, but for some actions it may be empty)
+    /// Parametrized effects are set to whatever current goal requires (e.g. if current goal is "stand at a specific position", a parametrized "goto" action can be created, which will move the actor to that exact position
+    /// If the current goal doesn't have the WorldState, the value from parametrizedEffects is used instead
     /// </summary>
     /// <param name="staticEffects"></param>
-    /// <param name="parametrizedEffects"></param>
+    /// <param name="parametrizedEffects">A ReGoapState containing all WorldStates that will be parametrized</param>
     /// <param name="staticPreconditions"></param>
-    protected virtual void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref List<IWorldState> parametrizedEffects, ref ReGoapState staticPreconditions ) { }
+    protected virtual void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref ReGoapState parametrizedEffects, ref ReGoapState staticPreconditions ) { }
 
     protected abstract ReGoapState GetPreconditionsFromGoal( ReGoapState goalState, Settings settings );
 
@@ -75,10 +77,11 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     /// <returns></returns>
     protected ReGoapState ExtractEffectsFromGoal( ReGoapState goalState ) {
         ReGoapState newState = new ReGoapState( staticEffects );
-        foreach(IWorldState state in parametrizedEffects) {
-            if(goalState.HasKey( state )) {
+        foreach(IWorldState state in parametrizedEffectsWithDefaults) {
+            if(goalState.HasKey( state ))
                 newState.SetFrom( state, goalState );
-            }
+            else
+                newState.SetFrom( state, parametrizedEffectsWithDefaults );
         }
         return newState;
     }

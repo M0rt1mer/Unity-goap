@@ -21,10 +21,10 @@ public class SimpleActionGetItemFromStash<Settings> : SimpleAction<Settings> whe
         HashSet<DBItem> itemsToFind = new HashSet<DBItem>();
         HashSet<DBItemCategory> categoriesToFind = new HashSet<DBItemCategory>();
         foreach (var state in goalState ){
-            if(state is WorldStateHasItem)
-                itemsToFind.Add( (state as WorldStateHasItem).item );
-            else if(state is WorldStateHasItemCategory)
-                categoriesToFind.Add( (state as WorldStateHasItemCategory).category );
+            if(state is WorldStateMinItem)
+                itemsToFind.Add( (state as WorldStateMinItem).item );
+            else if(state is WorldStateMinItemCategory)
+                categoriesToFind.Add( (state as WorldStateMinItemCategory).category );
         }
 
         ReGoapState worldState = goapAgent.GetMemory().GetWorldState();
