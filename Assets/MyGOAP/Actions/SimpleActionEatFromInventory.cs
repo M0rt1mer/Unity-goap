@@ -6,7 +6,7 @@ public class SimpleActionEatFromInventory<Settings> : SimpleAction<Settings> whe
 
     public DBItemCategory foodCategory;
 
-    protected override void InitializePreconditionsAndEffects(ref ReGoapState staticEffects, ref ReGoapState parametrizedEffects, ref ReGoapState staticPreconditions){
+    protected override void InitializePreconditionsAndEffects( ReGoapState staticEffects, ref ReGoapState parametrizedEffects,  ReGoapState staticPreconditions){
         parametrizedEffects.Set( WorldStates.STATE_FLOAT_SATURATION, 0 ); //we know nothing about current saturation, so we can't promise anything
         parametrizedEffects.Set( WorldStateMinItemCategory.GetStateForItem( foodCategory ), 0 ); //probably not required, set default to 0
     }

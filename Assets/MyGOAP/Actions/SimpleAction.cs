@@ -37,7 +37,7 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
         staticEffects = new ReGoapState();
         staticPreconditions = new ReGoapState();
         parametrizedEffectsWithDefaults = new ReGoapState();
-        InitializePreconditionsAndEffects( ref staticEffects, ref parametrizedEffectsWithDefaults, ref staticPreconditions );
+        InitializePreconditionsAndEffects(  staticEffects, ref parametrizedEffectsWithDefaults,  staticPreconditions );
     }
 
     #region ========================================================================================================  overridable
@@ -49,14 +49,14 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     /// <param name="staticEffects"></param>
     /// <param name="parametrizedEffects">A ReGoapState containing all WorldStates that will be parametrized</param>
     /// <param name="staticPreconditions"></param>
-    protected virtual void InitializePreconditionsAndEffects( ref ReGoapState staticEffects, ref ReGoapState parametrizedEffects, ref ReGoapState staticPreconditions ) { }
+    protected virtual void InitializePreconditionsAndEffects( ReGoapState staticEffects, ref ReGoapState parametrizedEffects, ReGoapState staticPreconditions ) { }
 
     protected abstract ReGoapState GetPreconditionsFromGoal( ReGoapState goalState, Settings settings );
 
     protected abstract IEnumerator<SimpleActionExecutionControlElements> Execute( Settings settings, Action fail );
 
-    public override IReGoapActionSettings Precalculations( IReGoapAgent goapAgent, ReGoapState goalState ) {
-        return new Settings { agent = goapAgent as GoapAgent, effects = ExtractEffectsFromGoal( goalState ) };
+    public override sealed IReGoapActionSettings Precalculations( IReGoapAgent goapAgent, ReGoapState goalState ) {
+        return new Settings { agent = goapAgent as GoapAgent, effects = ExtractEffectsFromGoal(goalState) };
     }
 
     public override float GetCost( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next ) {
@@ -76,21 +76,17 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     /// <param name="goalState"></param>
     /// <returns></returns>
     protected ReGoapState ExtractEffectsFromGoal( ReGoapState goalState ) {
-        ReGoapState newState = new ReGoapState( staticEffects );
-        foreach(IWorldState state in parametrizedEffectsWithDefaults) {
-            if(goalState.HasKey( state ))
-                newState.SetFrom( state, goalState );
-            else
-                newState.SetFrom( state, parametrizedEffectsWithDefaults );
-        }
-        return newState;
+            ReGoapState newState = new ReGoapState( staticEffects );
+            foreach(IWorldState state in parametrizedEffectsWithDefaults) {
+                if(goalState.HasKey( state ))
+                    newState.SetFrom( state, goalState );
+                else
+                    newState.SetFrom( state, parametrizedEffectsWithDefaults );
+            }
+            return newState;
     }
 
     public override void Exit(IReGoapAction nextAction){}
-
-    
-
-
 
     #region ========================================================================================================================= sealed
     public override sealed ReGoapState GetEffects( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next ) {

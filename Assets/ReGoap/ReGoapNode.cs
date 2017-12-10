@@ -74,29 +74,29 @@ public class ReGoapNode : INode<ReGoapState>
         var agent = planner.GetCurrentAgent();
         var actions = agent.GetActionsSet();
         foreach (var possibleAction in actions) {
-            IReGoapActionSettings settings = possibleAction.Precalculations(agent, goal);
-            var precond = possibleAction.GetPreconditions(goal, settings, action);
-            var effects = possibleAction.GetEffects(goal, settings, action);
-            if (possibleAction == action)
-                continue;
-            if(effects.DoesFullfillGoal( goal ) && // any effect is the current goal
-                !goal.HasConflict( precond, effects ) &&
-                possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null )) {
+                var settings = possibleAction.Precalculations( agent, goal );
+                var precond = possibleAction.GetPreconditions( goal, settings, action );
+                var effects = possibleAction.GetEffects( goal, settings, action );
+                if(possibleAction == action)
+                    continue;
+                if(effects.DoesFullfillGoal( goal ) && // any effect is the current goal
+                    !goal.HasConflict( precond, effects ) &&
+                    possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null )) {
 #if DEBUG
-                yield return new ReGoapActionState( possibleAction, settings ) { preconditions = precond, effects = effects };
+                    yield return new ReGoapActionState( possibleAction, settings ) { preconditions = precond, effects = effects };
 #else
                 yield return new ReGoapActionState( possibleAction, settings );
 #endif
-            }
-                #if DEBUG
-            else if(includeInvalidAction){
-                if(!effects.DoesFullfillGoal( goal ))
-                    yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
-                if(goal.HasConflict( precond, effects ))
-                    yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.CONFLICT, preconditions = precond, effects = effects };
-                if(!possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null ))
-                    yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION, preconditions = precond, effects = effects };
-            }
+                }
+#if DEBUG
+            else if(includeInvalidAction) {
+                    if(!effects.DoesFullfillGoal( goal ))
+                        yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
+                    if(goal.HasConflict( precond, effects ))
+                        yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.CONFLICT, preconditions = precond, effects = effects };
+                    if(!possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null ))
+                        yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION, preconditions = precond, effects = effects };
+                }
 #endif
         }
     }

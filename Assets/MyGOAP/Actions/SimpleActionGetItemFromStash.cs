@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class SimpleActionGetItemFromStash<Settings> : SimpleAction<Settings> where Settings:SimpleActionGetItemFromStashSettings, new()
-{
+public class SimpleActionGetItemFromStash<Settings> : SimpleAction<Settings> where Settings:SimpleActionGetItemFromStashSettings, new() {
 
 
     /// <summary>
@@ -14,7 +13,9 @@ public class SimpleActionGetItemFromStash<Settings> : SimpleAction<Settings> whe
     /// <param name="goapAgent"></param>
     /// <param name="goalState"></param>
     /// <returns></returns>
-    public override IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
+    /// 
+
+    public IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
     {
         Settings settings = base.Precalculations(goapAgent, goalState) as Settings;
 
