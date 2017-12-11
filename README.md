@@ -38,7 +38,7 @@ For action *A*, *before* state is computed by subtracting *effects(A)* from *aft
 
 State variable can have different logic, which determines conflict and addition operators:
 * EQUAL: 
-  *  *a + b*  cannot be computed
+  *  *a + b* is *a*, if *a=b*, otherwise cannot be computed
   *  *satisfies(a,b)* - true if *a* is equal to *b*
   * *conflict(a,b)* - true if *a* not equal to *b*
 * AT_LEAST:
