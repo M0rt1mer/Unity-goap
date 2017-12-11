@@ -87,7 +87,11 @@ public class AStarDebugWindow : EditorWindow {
 
         GUILayout.FlexibleSpace();
 
-        if(GUILayout.Button( "Reset view", GUILayout.Width( 100 ), GUILayout.Height( 18 ) )) {
+        if(GUILayout.Button( "Delete records", GUILayout.Width( 100 ) )) {
+            AStarDebugRecorder.recordings.Clear();
+        }
+
+        if(GUILayout.Button( "Reset view", GUILayout.Width( 100 ) )) {
             offset = Vector2.zero;
             fontSize = 10;
         }

@@ -50,6 +50,7 @@ public class SimpleActionGetItemFromStash<Settings> : SimpleAction<Settings> whe
             if (stash != null) {
                 float localDistance = Vector3.Distance(stash.GetEntryPoint(), worldState.Get(WorldStates.STATE_POSITION) );
                 if (localDistance < nearestStashDistance){
+                    //Debug.Log( string.Join( ",", stash.inv.items.Select( x => "(" + string.Join(";",x.sourceItem.categories.Select(y=>y.name).ToArray() ) + ")" ).ToArray() ) );
                     InGameItem localItem = stash.inv.items.FirstOrDefault( item => item.sourceItem.categories.Any( itemCategory => category == itemCategory ) );
                     if (localItem != default(InGameItem)){
                         nearestStash = stash;
@@ -78,6 +79,7 @@ public class SimpleActionGetItemFromStash<Settings> : SimpleAction<Settings> whe
     }
 
     public override bool CheckProceduralCondition( IReGoapAgent goapAgent, IReGoapActionSettings settings, BGoapState goalState, IReGoapAction nextAction ) {
+        //Debug.Log( settings );
         return (settings as SimpleActionGetItemFromStashSettings).stash != null;
     }
 
@@ -87,5 +89,9 @@ public class SimpleActionGetItemFromStashSettings : SimpleActionSettings {
 
     public SOStash stash { get; set; }
     public InGameItem item { get; set; }
+
+    public override string ToString() {
+        return string.Format( "Eff: {0}\nStash:{1}\nItem:{2}", this.effects, this.stash, this.item );
+    }
 
 }

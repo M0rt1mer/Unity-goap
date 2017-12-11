@@ -54,14 +54,24 @@ public abstract class StateVariableLogic<DataType> : IStateVariableLogic {
     public abstract object Add( object a, object b );
     public abstract bool IsConflict( object goal, object effect );
     public abstract bool Satisfies( object what, object whom );
+
 }
 
 /// <summary>
 /// Basic WorldStateLogic, indicates that values need to be matched exactly. Adding two states with different values will throw ArgumentException
 /// </summary>
 public class StateVariableLogicEquals : StateVariableLogic<object> {
+
+    /// <summary>
+    /// If both are equal, returns one of them, otherwise throws exception (as in that case InConflict is true, therefore this should not be computed)
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
     public override object Add( object a, object b ) {
-        throw new ArgumentException( "Trying to add conflicting states" );
+        if( IsConflict(a,b) )
+            throw new ArgumentException( "Trying to add conflicting states" );
+        return a;
     }
 
     /// <summary>

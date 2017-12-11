@@ -32,19 +32,16 @@ public class BGoapNode : INode<BGoapState>
         var nextAction = parent == null ? null : parent.action;
         if(action != null) {
 
-
             //first step - subtract effects of action
             var effects = action.GetEffects( parentGoal, actionSettings, nextAction );
             try {
                 goal = parentGoal.Difference( effects );
-
             } catch(ArgumentException e) {
                 Debug.Log( e );
             }
             //then add preconditions to the current goal state
             var preconditions = action.GetPreconditions( parentGoal, actionSettings, nextAction );
             goal = goal + preconditions;
-
             
             g += action.GetCost( parentGoal, actionSettings, nextAction );
 
@@ -136,13 +133,11 @@ public class BGoapNode : INode<BGoapState>
         return result;
     }
 
-    public int CompareTo(INode<BGoapState> other)
-    {
+    public int CompareTo(INode<BGoapState> other){
         return cost.CompareTo(other.GetCost());
     }
 
-    public float GetCost()
-    {
+    public float GetCost(){
         return cost;
     }
 
