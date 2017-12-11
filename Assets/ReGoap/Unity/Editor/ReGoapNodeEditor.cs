@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-public class ReGoapNodeEditor
+public class BGoapStateEditor
 {
     public Rect rect;
     public string title;
@@ -13,7 +13,7 @@ public class ReGoapNodeEditor
     public GUIStyle defaultNodeStyle;
     public GUIStyle selectedNodeStyle;
 
-    public ReGoapNodeEditor(Vector2 position, float width, float height, GUIStyle nodeStyle, GUIStyle selectedStyle)
+    public BGoapStateEditor(Vector2 position, float width, float height, GUIStyle nodeStyle, GUIStyle selectedStyle)
     {
         rect = new Rect(position.x, position.y, width, height);
         style = nodeStyle;

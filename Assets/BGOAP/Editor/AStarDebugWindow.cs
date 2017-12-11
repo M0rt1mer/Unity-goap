@@ -18,7 +18,7 @@ public class AStarDebugWindow : EditorWindow {
 
     static GUIStyle popupArea;
     static GUIStyle action;
-    static GUIStyle worldState;
+    //static GUIStyle worldState;
 
     static GUIStyle styleToolbar;
 
@@ -33,7 +33,7 @@ public class AStarDebugWindow : EditorWindow {
 
         //action = GUI.skin.box;
 
-        worldState = new GUIStyle();
+        //worldState = new GUIStyle();
 
         styleToolbar = new GUIStyle();
         styleToolbar.normal.background = (Texture2D)Resources.Load( "Toolbar" );
@@ -107,14 +107,14 @@ public class AStarDebugWindow : EditorWindow {
 
         if( selectedRecording != null && selectedRecording != lastDisplayedRecording ) {
 
-            MultiValueDictionary<ReGoapNode, ReGoapNode> childNodes = new MultiValueDictionary<ReGoapNode, ReGoapNode>();
-            ReGoapNode root = null;
+            MultiValueDictionary<BGoapNode, BGoapNode> childNodes = new MultiValueDictionary<BGoapNode, BGoapNode>();
+            BGoapNode root = null;
 
-            foreach(INode<ReGoapState> inode in selectedRecording.search) {
+            foreach(INode<BGoapState> inode in selectedRecording.search) {
                 if(inode.GetParent() != null)
-                    childNodes.Add( inode.GetParent() as ReGoapNode, inode as ReGoapNode );
+                    childNodes.Add( inode.GetParent() as BGoapNode, inode as BGoapNode );
                 else {
-                    root = inode as ReGoapNode;
+                    root = inode as BGoapNode;
                 }
             }
 
@@ -154,7 +154,7 @@ public class AStarDebugWindow : EditorWindow {
     }
 
     private static GUIStyle failedCondition = new GUIStyle();
-    private static Color failedBackgroundColor = new Color( 0.7f,0.57f,0.57f );
+    //private static Color failedBackgroundColor = new Color( 0.7f,0.57f,0.57f );
 
     private void DrawGrid( Rect area, float gridSpacing, float gridOpacity, Color gridColor ) {
         int widthDivs = Mathf.CeilToInt( area.width / gridSpacing );

@@ -6,7 +6,7 @@ public class ReGoapTestGoal : GoapGoal
         Awake();
     }
 
-    public void SetGoalState(ReGoapState goalState)
+    public void SetGoalState(BGoapState goalState)
     {
         goal = goalState;
     }

@@ -10,8 +10,8 @@ public class GoapAction : MonoBehaviour, IReGoapAction
 {
     public string Name = "GoapAction";
 
-    protected ReGoapState preconditions;
-    protected ReGoapState effects;
+    protected BGoapState preconditions;
+    protected BGoapState effects;
     public float Cost = 1;
 
     protected Action<IReGoapAction> doneCallback;
@@ -28,8 +28,8 @@ public class GoapAction : MonoBehaviour, IReGoapAction
     {
         enabled = false;
 
-        effects = new ReGoapState();
-        preconditions = new ReGoapState();
+        effects = new BGoapState();
+        preconditions = new BGoapState();
 
         genericValues = new Dictionary<string, object>();
     }
@@ -69,19 +69,19 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         interruptWhenPossible = true;
     }
 
-    public virtual IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, ReGoapState goalState)
+    public virtual IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, BGoapState goalState)
     {
         agent = goapAgent;
         return null;
     }
 
-    public virtual bool CheckProceduralCondition(IReGoapAgent goapAgent, ReGoapState goalState, IReGoapAction next = null)
+    public virtual bool CheckProceduralCondition(IReGoapAgent goapAgent, BGoapState goalState, IReGoapAction next = null)
     {
         return true;
     }
 
     public virtual IEnumerator Run(IReGoapAction previous, IReGoapAction next, IReGoapActionSettings settings,
-        ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail)
+        BGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail)
     {
         interruptWhenPossible = false;
         enabled = true;
@@ -114,22 +114,22 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         return string.Format("GoapAction('{0}')", Name);
     }
 
-    public virtual ReGoapState GetPreconditions(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
+    public virtual BGoapState GetPreconditions(BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
     {
         return preconditions;
     }
 
-    public virtual ReGoapState GetEffects(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
+    public virtual BGoapState GetEffects(BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
     {
         return effects;
     }
 
-    public virtual bool CheckProceduralCondition(IReGoapAgent goapAgent, IReGoapActionSettings settings, ReGoapState goalState, IReGoapAction nextAction = null)
+    public virtual bool CheckProceduralCondition(IReGoapAgent goapAgent, IReGoapActionSettings settings, BGoapState goalState, IReGoapAction nextAction = null)
     {
         return true;
     }
 
-    public virtual float GetCost(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
+    public virtual float GetCost(BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null)
     {
         return Cost;
     }

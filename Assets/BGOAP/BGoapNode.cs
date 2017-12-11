@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class ReGoapNode : INode<ReGoapState>
+public class BGoapNode : INode<BGoapState>
 {
     private readonly float cost;
     public readonly IGoapPlanner planner;
-    public readonly ReGoapNode parent;
+    public readonly BGoapNode parent;
     public readonly IReGoapAction action;
     public readonly IReGoapActionSettings actionSettings;
-    private readonly ReGoapState goal;
+    private readonly BGoapState goal;
     private readonly float g;
     private readonly float h;
 
     private readonly float heuristicMultiplier = 1;
 
-    public ReGoapNode(IGoapPlanner planner, ReGoapState parentGoal, ReGoapNode parent, ReGoapActionState actionState)
+    public BGoapNode(IGoapPlanner planner, BGoapState parentGoal, BGoapNode parent, ReGoapActionState actionState)
     {
         this.planner = planner;
         this.parent = parent;
@@ -62,7 +62,7 @@ public class ReGoapNode : INode<ReGoapState>
         return h;
     }
 
-    public ReGoapState GetState(){
+    public BGoapState GetState(){
         return goal;
     }
 
@@ -77,8 +77,6 @@ public class ReGoapNode : INode<ReGoapState>
                 var settings = possibleAction.Precalculations( agent, goal );
                 var precond = possibleAction.GetPreconditions( goal, settings, action );
                 var effects = possibleAction.GetEffects( goal, settings, action );
-                if(possibleAction == action)
-                    continue;
                 if(effects.DoesFullfillGoal( goal ) && // any effect is the current goal
                     !goal.HasConflict( precond, effects ) &&
                     possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null )) {
@@ -101,13 +99,13 @@ public class ReGoapNode : INode<ReGoapState>
         }
     }
 
-    public List<INode<ReGoapState>> Expand(){
-        var result = new List<INode<ReGoapState>>();
+    public List<INode<BGoapState>> Expand(){
+        var result = new List<INode<BGoapState>>();
         var possibleActions = GetPossibleActionsEnumerator();
         while (possibleActions.MoveNext())
         {
             result.Add(
-                new ReGoapNode(
+                new BGoapNode(
                     planner,
                     goal,
                     this,
@@ -128,7 +126,7 @@ public class ReGoapNode : INode<ReGoapState>
         while (node.GetParent() != null)
         {
             listResult.Add(new ReGoapActionState(node.action, node.actionSettings));
-            node = (ReGoapNode)node.GetParent();
+            node = (BGoapNode)node.GetParent();
         }
         var result = new Queue<ReGoapActionState>(listResult.Count);
         foreach (var thisActionState in listResult)
@@ -138,7 +136,7 @@ public class ReGoapNode : INode<ReGoapState>
         return result;
     }
 
-    public int CompareTo(INode<ReGoapState> other)
+    public int CompareTo(INode<BGoapState> other)
     {
         return cost.CompareTo(other.GetCost());
     }
@@ -148,7 +146,7 @@ public class ReGoapNode : INode<ReGoapState>
         return cost;
     }
 
-    public INode<ReGoapState> GetParent()
+    public INode<BGoapState> GetParent()
     {
         return parent;
     }
@@ -158,9 +156,8 @@ public class ReGoapNode : INode<ReGoapState>
     /// </summary>
     /// <param name="goal"></param>
     /// <returns></returns>
-    public bool IsGoal(ReGoapState goal)
-    {
-        return this.goal.TryDifference( planner.GetCurrentAgent().GetMemory().GetWorldState() ).IsEmpty();
+    public bool IsGoal(BGoapState goal){
+        return this.goal.Difference( planner.GetCurrentAgent().GetMemory().GetWorldState() ).IsEmpty();
     }
 
     public float Priority { get; set; }

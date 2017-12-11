@@ -6,18 +6,18 @@ using UnityEngine;
 public abstract class SimpleActionBase : ScriptableObject, IReGoapAction {
 
     public abstract void AskForInterruption( IReGoapActionSettings settings );
-    public abstract bool CheckProceduralCondition( IReGoapAgent goapAgent, IReGoapActionSettings settings, ReGoapState goalState, IReGoapAction nextAction = null );
+    public abstract bool CheckProceduralCondition( IReGoapAgent goapAgent, IReGoapActionSettings settings, BGoapState goalState, IReGoapAction nextAction = null );
     public abstract void Exit( IReGoapAction nextAction );
-    public abstract float GetCost( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null );
-    public abstract ReGoapState GetEffects( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null );
+    public abstract float GetCost( BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null );
+    public abstract BGoapState GetEffects( BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null );
     public abstract Dictionary<string, object> GetGenericValues();
     public abstract string GetName();
-    public abstract ReGoapState GetPreconditions( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null );
+    public abstract BGoapState GetPreconditions( BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null );
     public abstract bool IsActive();
     public abstract bool IsInterruptable();
     public abstract void PostPlanCalculations( IReGoapAgent goapAgent );
-    public abstract IReGoapActionSettings Precalculations( IReGoapAgent goapAgent, ReGoapState goalState );
-    public abstract IEnumerator Run( IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail );
+    public abstract IReGoapActionSettings Precalculations( IReGoapAgent goapAgent, BGoapState goalState );
+    public abstract IEnumerator Run( IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, BGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail );
 }
 /// <summary>
 /// Simple action is defined by three sets:
@@ -27,16 +27,14 @@ public abstract class SimpleActionBase : ScriptableObject, IReGoapAction {
 /// </summary>
 public abstract class SimpleAction <Settings> : SimpleActionBase where Settings : SimpleActionSettings, new() {
 
-    public string name;
-
-    private ReGoapState staticEffects;
-    private ReGoapState parametrizedEffectsWithDefaults;
-    private ReGoapState staticPreconditions;
+    private BGoapState staticEffects;
+    private BGoapState parametrizedEffectsWithDefaults;
+    private BGoapState staticPreconditions;
 
     public void OnEnable(){
-        staticEffects = new ReGoapState();
-        staticPreconditions = new ReGoapState();
-        parametrizedEffectsWithDefaults = new ReGoapState();
+        staticEffects = new BGoapState();
+        staticPreconditions = new BGoapState();
+        parametrizedEffectsWithDefaults = new BGoapState();
         InitializePreconditionsAndEffects(  staticEffects, ref parametrizedEffectsWithDefaults,  staticPreconditions );
     }
 
@@ -49,21 +47,21 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     /// <param name="staticEffects"></param>
     /// <param name="parametrizedEffects">A ReGoapState containing all WorldStates that will be parametrized</param>
     /// <param name="staticPreconditions"></param>
-    protected virtual void InitializePreconditionsAndEffects( ReGoapState staticEffects, ref ReGoapState parametrizedEffects, ReGoapState staticPreconditions ) { }
+    protected virtual void InitializePreconditionsAndEffects( BGoapState staticEffects, ref BGoapState parametrizedEffects, BGoapState staticPreconditions ) { }
 
-    protected abstract ReGoapState GetPreconditionsFromGoal( ReGoapState goalState, Settings settings );
+    protected abstract BGoapState GetPreconditionsFromGoal( BGoapState goalState, Settings settings );
 
     protected abstract IEnumerator<SimpleActionExecutionControlElements> Execute( Settings settings, Action fail );
 
-    public override sealed IReGoapActionSettings Precalculations( IReGoapAgent goapAgent, ReGoapState goalState ) {
+    public override sealed IReGoapActionSettings Precalculations( IReGoapAgent goapAgent, BGoapState goalState ) {
         return new Settings { agent = goapAgent as GoapAgent, effects = ExtractEffectsFromGoal(goalState) };
     }
 
-    public override float GetCost( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next ) {
+    public override float GetCost( BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next ) {
         return 1;
     }
 
-    public override bool CheckProceduralCondition( IReGoapAgent goapAgent, IReGoapActionSettings settings, ReGoapState goalState, IReGoapAction nextAction ) {
+    public override bool CheckProceduralCondition( IReGoapAgent goapAgent, IReGoapActionSettings settings, BGoapState goalState, IReGoapAction nextAction ) {
         return true;
     }
 
@@ -75,9 +73,9 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     /// </summary>
     /// <param name="goalState"></param>
     /// <returns></returns>
-    protected ReGoapState ExtractEffectsFromGoal( ReGoapState goalState ) {
-            ReGoapState newState = new ReGoapState( staticEffects );
-            foreach(IWorldState state in parametrizedEffectsWithDefaults) {
+    protected BGoapState ExtractEffectsFromGoal( BGoapState goalState ) {
+            BGoapState newState = new BGoapState( staticEffects );
+            foreach(IStateVarKey state in parametrizedEffectsWithDefaults) {
                 if(goalState.HasKey( state ))
                     newState.SetFrom( state, goalState );
                 else
@@ -89,11 +87,11 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     public override void Exit(IReGoapAction nextAction){}
 
     #region ========================================================================================================================= sealed
-    public override sealed ReGoapState GetEffects( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next ) {
+    public override sealed BGoapState GetEffects( BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next ) {
         return (settings as SimpleActionSettings).effects;
     }
 
-    public override sealed IEnumerator Run( IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settingsParam, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail ) {
+    public override sealed IEnumerator Run( IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settingsParam, BGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail ) {
         Settings settings = settingsParam as Settings;
         IEnumerator<SimpleActionExecutionControlElements> progress = Execute( settings, () => { fail( this ); } );
         while(progress.MoveNext()) {
@@ -108,8 +106,8 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
         done( this );
     }
 
-    public override sealed ReGoapState GetPreconditions( ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null ) {
-        ReGoapState variablePreconditions = GetPreconditionsFromGoal( goalState, settings as Settings );
+    public override sealed BGoapState GetPreconditions( BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null ) {
+        BGoapState variablePreconditions = GetPreconditionsFromGoal( goalState, settings as Settings );
         if(variablePreconditions == null || variablePreconditions.IsEmpty() )
             return staticPreconditions;
         else {
@@ -153,7 +151,7 @@ public enum SimpleActionExecutionControlElements {
 public class SimpleActionSettings : IReGoapActionSettings {
 
     public GoapAgent agent { get; set; }
-    public ReGoapState effects { get; set; }
+    public BGoapState effects { get; set; }
 
     public bool interruptNextChanceYouHave { set; get; }
 

@@ -16,9 +16,9 @@ public class AStarDebugRecorder {
 
 public class AStarDebugRecording {
 
-    public ReGoapNode[] search;
+    public BGoapNode[] search;
 
-    public AStarDebugRecording( IEnumerable<ReGoapNode> search ) {
+    public AStarDebugRecording( IEnumerable<BGoapNode> search ) {
         this.search = search.ToArray();
     }
 

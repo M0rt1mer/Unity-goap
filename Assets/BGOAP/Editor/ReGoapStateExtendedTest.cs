@@ -4,21 +4,21 @@ using UnityEngine.TestTools;
 
 public class ReGoapStateTest {
 
-    WorldState<float> wsEqual = new WorldState<float>("equal");
+    StateVarKey<float> wsEqual = new StateVarKey<float>("equal");
 
-    WorldState<float> wsAtLeast = new WorldStateComparable<float,WorldStateLogicAtLeast>("at least");
+    StateVarKey<float> wsAtLeast = new StateVarKeyComparable<float,StateVariableLogicAtLeast>("at least");
 
-    WorldState<float> wsAtMost = new WorldStateComparable<float,WorldStateLogicAtMost>("at most");
+    StateVarKey<float> wsAtMost = new StateVarKeyComparable<float,StateVariableLogicAtMost>("at most");
 
     [Test]
     public void _1_plusOperator() {
 
-        ReGoapState stateA = new ReGoapState();
-        ReGoapState stateB = new ReGoapState();
+        BGoapState stateA = new BGoapState();
+        BGoapState stateB = new BGoapState();
 
         stateA.Set(wsEqual, 1f);
         stateB.Set(wsEqual, 2f);
-        ReGoapState stateC;
+        BGoapState stateC;
         Assert.Throws<ArgumentException>( () => { stateC = stateA + stateB; }, "Two conflicting states" );
 
         stateB.Clear();
@@ -40,9 +40,9 @@ public class ReGoapStateTest {
     [Test]
     public void _2_hasConflict() {
 
-        ReGoapState goal = new ReGoapState();
-        ReGoapState prec = new ReGoapState();
-        ReGoapState eff = new ReGoapState();
+        BGoapState goal = new BGoapState();
+        BGoapState prec = new BGoapState();
+        BGoapState eff = new BGoapState();
 
         goal.Set(wsEqual, 5);
         eff.Set(wsAtLeast, 4);
@@ -102,9 +102,9 @@ public class ReGoapStateTest {
     [Test]
     public void _3_Difference() {
 
-        ReGoapState eff = new ReGoapState();
-        ReGoapState goal = new ReGoapState();
-        ReGoapState difference;
+        BGoapState eff = new BGoapState();
+        BGoapState goal = new BGoapState();
+        BGoapState difference;
 
         eff.Set( wsEqual, 4 );
         goal.Set( wsEqual, 4 );
@@ -146,22 +146,22 @@ public class ReGoapStateTest {
     [Test]
     public void _4_ChainOperations() {
 
-        ReGoapState goal = new ReGoapState();
+        BGoapState goal = new BGoapState();
 
         goal.Set( wsEqual, 10 );
         goal.Set( wsAtLeast, 25 );
         goal.Set( wsAtMost, 4 );
 
-        ReGoapState eff4 = new ReGoapState();
+        BGoapState eff4 = new BGoapState();
         eff4.Set( wsAtLeast, 20 );
         eff4.Set( wsAtMost, 2 );
         var preEff4 = goal.Difference( eff4 );
 
-        ReGoapState eff3 = new ReGoapState();
+        BGoapState eff3 = new BGoapState();
         eff3.Set( wsEqual, 10 );
         var preEff3 = preEff4.Difference( eff3 );
 
-        ReGoapState eff2 = new ReGoapState();
+        BGoapState eff2 = new BGoapState();
         eff2.Set( wsAtLeast, 40 );
         eff2.Set( wsAtMost, 15 );
 

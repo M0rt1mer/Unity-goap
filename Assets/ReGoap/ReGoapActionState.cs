@@ -7,8 +7,8 @@
     public bool isValid { set; get; }
     public InvalidReason reason { set; get; }
     public enum InvalidReason { EFFECTS_DONT_HELP, CONFLICT, PROCEDURAL_CONDITION }
-    public ReGoapState preconditions { set; get; }
-    public ReGoapState effects { set; get; }
+    public BGoapState preconditions { set; get; }
+    public BGoapState effects { set; get; }
 #endif
 
 

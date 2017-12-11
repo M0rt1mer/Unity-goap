@@ -4,9 +4,9 @@ using UnityEditor;
 using System.Collections.Generic;
 using UnityEngine.VR;
 /*
-public class ReGoapNodeBaseEditor : EditorWindow
+public class BGoapStateBaseEditor : EditorWindow
 {
-    private List<ReGoapNodeEditor> nodes;
+    private List<BGoapStateEditor> nodes;
 
     private GUIStyle nodeStyle;
     private GUIStyle selectedNodeStyle;
@@ -24,7 +24,7 @@ public class ReGoapNodeBaseEditor : EditorWindow
     [MenuItem("Window/ReGoap Debugger")]
     private static void OpenWindow()
     {
-        ReGoapNodeBaseEditor window = GetWindow<ReGoapNodeBaseEditor>();
+        BGoapStateBaseEditor window = GetWindow<BGoapStateBaseEditor>();
         window.titleContent = new GUIContent("ReGoap Debugger");
     }
 
@@ -99,9 +99,9 @@ public class ReGoapNodeBaseEditor : EditorWindow
     }
 
     #region GOAP
-    ReGoapNodeEditor DrawGenericNode(string text, float width, float height, GUIStyle style, ref Vector2 nodePosition)
+    BGoapStateEditor DrawGenericNode(string text, float width, float height, GUIStyle style, ref Vector2 nodePosition)
     {
-        var node = new ReGoapNodeEditor(nodePosition + totalDrag, width, height, style, selectedNodeStyle)
+        var node = new BGoapStateEditor(nodePosition + totalDrag, width, height, style, selectedNodeStyle)
         {
             title = text
         };
@@ -117,7 +117,7 @@ public class ReGoapNodeBaseEditor : EditorWindow
 
         if (nodes == null)
         {
-            nodes = new List<ReGoapNodeEditor>();
+            nodes = new List<BGoapStateEditor>();
         }
         nodes.Clear();
         var width = 250f;
@@ -279,7 +279,7 @@ public class ReGoapNodeBaseEditor : EditorWindow
 
         if (nodes != null)
         {
-            foreach (ReGoapNodeEditor node in nodes)
+            foreach (BGoapStateEditor node in nodes)
             {
                 node.Drag(delta);
             }

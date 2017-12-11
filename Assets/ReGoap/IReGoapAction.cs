@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public interface IReGoapAction
 {
-    IEnumerator Run(IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, ReGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail);
+    IEnumerator Run(IReGoapAction previousAction, IReGoapAction nextAction, IReGoapActionSettings settings, BGoapState goalState, Action<IReGoapAction> done, Action<IReGoapAction> fail);
     void Exit(IReGoapAction nextAction);
     Dictionary<string, object> GetGenericValues();
     string GetName();
@@ -13,14 +13,14 @@ public interface IReGoapAction
     bool IsInterruptable();
     void AskForInterruption( IReGoapActionSettings settings );
     // THREAD SAFE
-    ReGoapState GetPreconditions(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
-    ReGoapState GetEffects(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
-    bool CheckProceduralCondition(IReGoapAgent goapAgent, IReGoapActionSettings settings, ReGoapState goalState, IReGoapAction nextAction = null);
-    float GetCost(ReGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
+    BGoapState GetPreconditions(BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
+    BGoapState GetEffects(BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
+    bool CheckProceduralCondition(IReGoapAgent goapAgent, IReGoapActionSettings settings, BGoapState goalState, IReGoapAction nextAction = null);
+    float GetCost(BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
 
 
 
-    IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, ReGoapState goalState);
+    IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, BGoapState goalState);
 }
 
 public interface IReGoapActionSettings

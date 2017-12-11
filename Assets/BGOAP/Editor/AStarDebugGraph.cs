@@ -18,16 +18,16 @@ public class AStarDebugNode : Node {
     }
 
     public override string ToString() {
-        ReGoapNode node = content as ReGoapNode;
+        BGoapNode node = content as BGoapNode;
         if( node.action != null )
-            return node.action + "\n\n" + string.Join( "\n", ((content as ReGoapNode).GetState() as IEnumerable<KeyValuePair<IWorldState, object>>).Select( x=> (x.Key.name + ":" + x.Value) ).ToArray() );
-        return string.Join( "\n", ((content as ReGoapNode).GetState() as IEnumerable<KeyValuePair<IWorldState, object>>).Select( x => (x.Key.name + ":" + x.Value) ).ToArray() );
+            return node.action + "\n\n" + string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey, object>>).Select( x=> (x.Key.name + ":" + x.Value) ).ToArray() );
+        return string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey, object>>).Select( x => (x.Key.name + ":" + x.Value) ).ToArray() );
     }
 
     public override Color GetColor() {
-        if((content as ReGoapNode).GetParent() == null)
+        if((content as BGoapNode).GetParent() == null)
             return colorStart;
-        else if((content as ReGoapNode).IsGoal( null ))
+        else if((content as BGoapNode).IsGoal( null ))
             return colorGoal;
         else
             return colorNormal;
@@ -38,19 +38,19 @@ public class AStarDebugNode : Node {
 
 public class AStarDebugGraph : Graph {
 
-    private MultiValueDictionary<ReGoapNode, ReGoapNode> childLists;
-    private ReGoapNode root;
+    private MultiValueDictionary<BGoapNode, BGoapNode> childLists;
+    private BGoapNode root;
 
-    public AStarDebugGraph( MultiValueDictionary<ReGoapNode, ReGoapNode> childLists, ReGoapNode root ) {
+    public AStarDebugGraph( MultiValueDictionary<BGoapNode, BGoapNode> childLists, BGoapNode root ) {
         this.childLists = childLists;
         this.root = root;
     }
 
     protected override IEnumerable<Node> GetChildren( Node node ) {
-        ReGoapNode goapNode = (node as AStarDebugNode).content as ReGoapNode;
+        BGoapNode goapNode = (node as AStarDebugNode).content as BGoapNode;
         if( childLists.ContainsKey( goapNode ) )
-            foreach( var reGoapNode in childLists.GetValues( goapNode, true) ) {
-                yield return new AStarDebugNode( reGoapNode );
+            foreach( var BGoapNode in childLists.GetValues( goapNode, true) ) {
+                yield return new AStarDebugNode( BGoapNode );
             }
     }
 
@@ -157,7 +157,7 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
 
     private void DrawPossibleActions( Vector2 position ) {
         List<ReGoapActionState> actions = new List<ReGoapActionState>();
-        var enumerator = (selectedVertex.node.content as ReGoapNode).GetPossibleActionsEnumerator( true );
+        var enumerator = (selectedVertex.node.content as BGoapNode).GetPossibleActionsEnumerator( true );
         while(enumerator.MoveNext())
             actions.Add( enumerator.Current );
 

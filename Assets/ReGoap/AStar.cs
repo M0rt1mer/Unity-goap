@@ -32,7 +32,7 @@ public class AStar<T>
             {
                 ReGoapLogger.Log("[Astar] Success iterations: " + iterations);
 #if DEBUG
-                AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Concat( new INode<T>[] { node } ).Cast<ReGoapNode>() ) );
+                AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Concat( new INode<T>[] { node } ).Cast<BGoapNode>() ) );
 #endif
                 return node;
             }
@@ -43,7 +43,7 @@ public class AStar<T>
                 {
                     ReGoapLogger.Log("[Astar] (early exit) Success iterations: " + iterations);
 #if DEBUG
-                    AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Concat( new INode<T>[] { child } ).Cast<ReGoapNode>() ) );
+                    AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Concat( new INode<T>[] { child } ).Cast<BGoapNode>() ) );
 #endif
                     return child;
                 }
@@ -66,7 +66,7 @@ public class AStar<T>
         }
         ReGoapLogger.LogWarning("[Astar] failed.");
 #if DEBUG
-        AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Cast<ReGoapNode>() ) );
+        AStarDebugRecorder.AddRecording( new AStarDebugRecording( explored.Values.Concat( frontier ).Cast<BGoapNode>() ) );
 #endif
         return null;
     }

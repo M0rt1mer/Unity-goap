@@ -5,12 +5,12 @@
         Awake();
     }
 
-    public void SetEffects(ReGoapState effects)
+    public void SetEffects(BGoapState effects)
     {
         this.effects = effects;
     }
 
-    public void SetPreconditions(ReGoapState preconditions)
+    public void SetPreconditions(BGoapState preconditions)
     {
         this.preconditions = preconditions;
     }

@@ -11,7 +11,7 @@ using UnityEngine.AI;
 /// <typeparam name="Settings"></typeparam>
 public class SimpleActionGoto<Settings> : SimpleAction<Settings> where Settings: SimpleActionSettings, new() {
 
-    protected override void InitializePreconditionsAndEffects( ReGoapState staticEffects, ref ReGoapState parametrizedEffects, ReGoapState staticPreconditions ) {
+    protected override void InitializePreconditionsAndEffects( BGoapState staticEffects, ref BGoapState parametrizedEffects, BGoapState staticPreconditions ) {
         parametrizedEffects.Set( WorldStates.STATE_POSITION, default( Vector3 ) ); //since this is the only effect, default doesn't matter
     }
 
@@ -27,7 +27,7 @@ public class SimpleActionGoto<Settings> : SimpleAction<Settings> where Settings:
 
     }
 
-    protected override ReGoapState GetPreconditionsFromGoal( ReGoapState goal, Settings settings ) {
+    protected override BGoapState GetPreconditionsFromGoal( BGoapState goal, Settings settings ) {
         return null;
     }
     

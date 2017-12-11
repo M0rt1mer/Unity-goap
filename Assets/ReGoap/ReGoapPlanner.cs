@@ -6,13 +6,13 @@ public class ReGoapPlanner : IGoapPlanner
     private IReGoapAgent goapAgent;
     private IReGoapGoal currentGoal;
     public bool Calculated;
-    private readonly AStar<ReGoapState> astar;
+    private readonly AStar<BGoapState> astar;
     private readonly ReGoapPlannerSettings settings;
 
     public ReGoapPlanner(ReGoapPlannerSettings settings = null)
     {
         this.settings = settings ?? new ReGoapPlannerSettings();
-        astar = new AStar<ReGoapState>(this.settings.MaxNodesToExpand);
+        astar = new AStar<BGoapState>(this.settings.MaxNodesToExpand);
     }
 
     public IReGoapGoal Plan(IReGoapAgent agent, IReGoapGoal blacklistGoal = null, Queue<ReGoapActionState> currentPlan = null, Action<IReGoapGoal> callback = null)
@@ -38,8 +38,8 @@ public class ReGoapPlanner : IGoapPlanner
             possibleGoals.RemoveAt(possibleGoals.Count - 1);
             var goalState = currentGoal.GetGoalState();
 
-            var leaf = (ReGoapNode)astar.Run(
-                new ReGoapNode(this, goalState, null, null), goalState, settings.MaxIterations, settings.PlanningEarlyExit);
+            var leaf = (BGoapNode)astar.Run(
+                new BGoapNode(this, goalState, null, null), goalState, settings.MaxIterations, settings.PlanningEarlyExit);
             if (leaf == null)
             {
                 currentGoal = null;

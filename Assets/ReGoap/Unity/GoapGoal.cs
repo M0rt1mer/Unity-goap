@@ -11,7 +11,7 @@ public class GoapGoal : MonoBehaviour, IReGoapGoal
     public float Priority = 1;
     public float ErrorDelay = 0.5f;
 
-    protected ReGoapState goal;
+    protected BGoapState goal;
     protected Queue<ReGoapActionState> plan;
     protected IGoapPlanner planner;
 
@@ -21,7 +21,7 @@ public class GoapGoal : MonoBehaviour, IReGoapGoal
     #region UnityFunctions
     protected virtual void Awake()
     {
-        goal = new ReGoapState();
+        goal = new BGoapState();
     }
 
     protected virtual void Start()
@@ -68,7 +68,7 @@ public class GoapGoal : MonoBehaviour, IReGoapGoal
         return plan;
     }
 
-    public virtual ReGoapState GetGoalState()
+    public virtual BGoapState GetGoalState()
     {
         return goal;
     }

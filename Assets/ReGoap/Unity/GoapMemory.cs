@@ -6,14 +6,14 @@ using UnityEngine;
 
 public class GoapMemory : MonoBehaviour, IReGoapMemory
 {
-    protected ReGoapState state;
+    protected BGoapState state;
     private IReGoapSensor[] sensors;
     private SmartObject[] availableSoList;
 
     #region UnityFunctions
     protected virtual void Awake()
     {
-        state = new ReGoapState();
+        state = new BGoapState();
         sensors = GetComponents<IReGoapSensor>();
         foreach (var sensor in sensors)
         {
@@ -39,7 +39,7 @@ public class GoapMemory : MonoBehaviour, IReGoapMemory
     }
     #endregion
 
-    public virtual ReGoapState GetWorldState()
+    public virtual BGoapState GetWorldState()
     {
         return state;
     }

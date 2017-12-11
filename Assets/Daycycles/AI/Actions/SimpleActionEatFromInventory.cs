@@ -6,7 +6,7 @@ public class SimpleActionEatFromInventory<Settings> : SimpleAction<Settings> whe
 
     public DBItemCategory foodCategory;
 
-    protected override void InitializePreconditionsAndEffects( ReGoapState staticEffects, ref ReGoapState parametrizedEffects,  ReGoapState staticPreconditions){
+    protected override void InitializePreconditionsAndEffects( BGoapState staticEffects, ref BGoapState parametrizedEffects,  BGoapState staticPreconditions){
         parametrizedEffects.Set( WorldStates.STATE_FLOAT_SATURATION, 0 ); //we know nothing about current saturation, so we can't promise anything
         parametrizedEffects.Set( WorldStateMinItemCategory.GetStateForItem( foodCategory ), 0 ); //probably not required, set default to 0
     }
@@ -16,8 +16,8 @@ public class SimpleActionEatFromInventory<Settings> : SimpleAction<Settings> whe
         yield break;
     }
 
-    protected override ReGoapState GetPreconditionsFromGoal(ReGoapState goalState, Settings settings){
-        ReGoapState returnState = new ReGoapState();
+    protected override BGoapState GetPreconditionsFromGoal(BGoapState goalState, Settings settings){
+        BGoapState returnState = new BGoapState();
         returnState.Set( WorldStates.STATE_FLOAT_SATURATION, Mathf.Max( goalState.Get( WorldStates.STATE_FLOAT_SATURATION ) - RPGHunger.GetSingleItemFoodLevel(), 0 ) ); //require less saturation - will be increased
         returnState.Set( WorldStateMinItemCategory.GetStateForItem( foodCategory ), goalState.Get( WorldStateMinItemCategory.GetStateForItem( foodCategory ) ) + 1 ); //require one more food item
         return returnState;

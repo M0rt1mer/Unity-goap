@@ -5,6 +5,4 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Daycycles/ItemCategory")]
 public class DBItemCategory : ScriptableObject {
 
-    public string name;
-
 }

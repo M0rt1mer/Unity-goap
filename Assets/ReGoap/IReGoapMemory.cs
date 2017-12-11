@@ -1,6 +1,6 @@
 ﻿public interface IReGoapMemory
 {
-    ReGoapState GetWorldState();
+    BGoapState GetWorldState();
     SmartObject[] GetAvailableSoList();
     void SetAvailableSoList( SmartObject[] list );
 }
