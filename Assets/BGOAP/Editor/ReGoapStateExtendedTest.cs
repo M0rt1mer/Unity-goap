@@ -12,23 +12,6 @@ public class ReGoapStateTest {
     StateVarKey<float> wsAtMost = new StateVarKeyComparable<float,StateVariableLogicAtMost>("at most",float.MaxValue);
 
     [Test]
-    public void _0_Covariance() {
-
-        IEnumerable<float> enumString = new float[10];
-        IEnumerable<object> enumObject = (IEnumerable<object>) enumString;
-
-        IStateVarKey<object> obj = (IStateVarKey<object>) wsEqual;
-
-        Assert.NotNull( obj );
-
-        obj = wsAtLeast as IStateVarKey<object>;
-        obj = wsAtMost as IStateVarKey<object>;
-
-    }
-
-
-
-    [Test]
     public void _1_plusOperator() {
 
         BGoapState stateA = new BGoapState();
@@ -127,7 +110,7 @@ public class ReGoapStateTest {
         eff.Set( wsEqual, 4 );
         goal.Set( wsEqual, 4 );
         difference = goal.Difference( eff );
-        Assert.IsFalse( difference.HasKey( (IStateVarKey<object>) wsEqual ), "subtracting two identical EQUAL values" );
+        Assert.IsFalse( difference.HasKey(  wsEqual ), "subtracting two identical EQUAL values" );
 
         eff.Clear();
         eff.Set( wsEqual, 5 );
@@ -145,7 +128,7 @@ public class ReGoapStateTest {
         eff.Set( wsAtLeast, 15 );
 
         difference = goal.Difference( eff );
-        Assert.IsFalse( difference.HasKey( (IStateVarKey<object>) wsAtLeast ), "At least, 10 \\ 5" );
+        Assert.IsFalse( difference.HasKey(  wsAtLeast ), "At least, 10 \\ 5" );
 
         goal.Clear();
         eff.Clear();
@@ -153,7 +136,7 @@ public class ReGoapStateTest {
 
         eff.Set( wsAtMost, 5 );
         difference = goal.Difference( eff );
-        Assert.IsFalse( difference.HasKey( (IStateVarKey<object>) wsAtMost ), "At most, 10 \\ 5" );
+        Assert.IsFalse( difference.HasKey( wsAtMost ), "At most, 10 \\ 5" );
 
         eff.Set( wsAtMost, 15 );
         difference = goal.Difference( eff );
@@ -185,9 +168,9 @@ public class ReGoapStateTest {
 
         var preEff2 = preEff3.Difference( eff2 );
 
-        Assert.IsFalse( preEff2.HasKey( (IStateVarKey<object>)wsAtMost ), "initial set contains wsAtMost" );
-        Assert.IsFalse( preEff2.HasKey( (IStateVarKey<object>) wsAtLeast ), "initial set contains wsAtLeast" );
-        Assert.IsFalse( preEff2.HasKey( (IStateVarKey<object>) wsEqual ), "initial set contains wsEqual" );
+        Assert.IsFalse( preEff2.HasKey( wsAtMost ), "initial set contains wsAtMost" );
+        Assert.IsFalse( preEff2.HasKey( wsAtLeast ), "initial set contains wsAtLeast" );
+        Assert.IsFalse( preEff2.HasKey( wsEqual ), "initial set contains wsEqual" );
 
         var reconstructedGoal = preEff2.Union( eff2 ).Union( eff3 ).Union( eff4 );
 

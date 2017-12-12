@@ -75,7 +75,7 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     /// <returns></returns>
     protected BGoapState ExtractEffectsFromGoal( BGoapState goalState ) {
             BGoapState newState = new BGoapState( staticEffects );
-            foreach(IStateVarKey<object> state in parametrizedEffectsWithDefaults) {
+            foreach(IStateVarKey state in parametrizedEffectsWithDefaults) {
                 if(goalState.HasKey( state ))
                     newState.SetFrom( state, goalState );
                 else

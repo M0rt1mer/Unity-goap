@@ -37,7 +37,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         lock(b.values) {
             foreach(var pair in b.values) {
                 if(values.ContainsKey( pair.Key )) { //value is contained in both a and b
-                    result.values[pair.Key] = pair.Key.logic.Add( values[pair.Key], b.values[pair.Key] ); // use this key's logic to combine the two values
+                    result.values[pair.Key] = pair.Key.Logic.Add( values[pair.Key], b.values[pair.Key] ); // use this key's logic to combine the two values
                 } else result.values[pair.Key] = pair.Value; //value was only in b
             }
             return result;
@@ -57,13 +57,10 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         lock(values) lock(other.values) {
                 foreach(var key in values.Keys) {
                     if( other.HasKey( key ) ) { //value exists
-                        if( !key.logic.Satisfies( other.values[key], values[key] ) )
+                        if( !key.Logic.Satisfies( other.values[key], values[key] ) )
                             result.values.Add( key, values[key] );
-                    } else if(other is IStateVarKeyDefaultable) { //value doesn't exists BUT subtractor has default value
-                        if(!key.logic.Satisfies( (other as IStateVarKeyDefaultable).GetDefaultValue(), values[key] ))
+                    } else if(!key.Logic.Satisfies( key.GetDefaultValue(), values[key] ))
                             result.values.Add( key, values[key] );
-                    } else //value doesn't exist - don't subtract
-                        result.values.Add( key, values[key] );
                 }
             }
         return result;
@@ -79,8 +76,8 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         float distance = 0;
         foreach (var pair in values) {
             if (from.HasKey(pair.Key)) {
-                distance += pair.Key.Distance( values[pair.Key], from.values[pair.Key] );
-            }
+                distance += pair.Key.Distance( from.values[pair.Key], values[pair.Key] );
+            } else distance += pair.Key.Distance( pair.Key.GetDefaultValue(), values[pair.Key] );
         }
         return distance;
     }
@@ -97,10 +94,10 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         //check effects
         foreach (var key in values.Keys) {
             if(effects.HasKey( key )) {
-                if(key.logic.IsConflict( values[key], effects.values[key] ))
+                if(key.Logic.IsConflict( values[key], effects.values[key] ))
                     return true;
             } else if(precond.HasKey( key )) { //only check precond, if this value was not changed 
-                if(key.logic.IsConflict( values[key], precond.values[key] ))
+                if(key.Logic.IsConflict( values[key], precond.values[key] ))
                     return true;
             }
         }
@@ -118,7 +115,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         {
             foreach ( var pair in goal.values ){
                     if( goal.HasKey( pair.Key ) )
-                        if( pair.Key.logic.Satisfies( pair.Value, goal.values[pair.Key] ) ) //if variable gets canceled out, it means that it fulfilled goal
+                        if( pair.Key.Logic.Satisfies( pair.Value, goal.values[pair.Key] ) ) //if variable gets canceled out, it means that it fulfilled goal
                             return true;
             }
             return false;

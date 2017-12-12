@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class RPGHands : GoapSensor {
 
-    public string leftHandItem;
-    public string rightHandItem;
+    public InGameItem leftHandItem;
+    public InGameItem rightHandItem;
 
     public override void UpdateSensor() {
-        GetMemory().GetWorldState().Set( WorldStates.STATE_HAND_LEFT, leftHandItem );
-        GetMemory().GetWorldState().Set( WorldStates.STATE_HAND_RIGHT, rightHandItem );
+        GetMemory().GetWorldState().Set( WorldStates.STATE_HAND_LEFT, leftHandItem.sourceItem );
+        GetMemory().GetWorldState().Set( WorldStates.STATE_HAND_RIGHT, rightHandItem.sourceItem );
     }
 
 }

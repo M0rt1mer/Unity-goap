@@ -5,31 +5,41 @@ using UnityEngine;
 
 #region IWorldState
 
+
+public interface IStateVarKey {
+
+    IStateVariableLogic Logic { get; }
+    string Name { get; }
+    object GetDefaultValue();
+    float Distance( object initial, object goal );
+
+}
+
 /// <summary>
 /// IStateVarKey is an key for for BGoapState. Each Key/Value pair represent a statement about the NPC (e.g. "is at world position X"). 
 /// </summary>
 /// <typeparam name="ValueType">Type for values, which can be stored under this key. This is guaranteed only in BGoapState</typeparam>
-public interface IStateVarKey<out ValueType>{
+public abstract class AStateVarKey<ValueType> : IStateVarKey {
+    public abstract IStateVariableLogic Logic { protected set; get; }
+    public abstract string Name { protected set; get; }
 
-    IStateVariableLogic logic { get; }
-    string Name { get; }
-    ValueType GetDefaultValue();
-    float Distance(object a, object b);
-
+    public abstract float Distance( object a, object b );
+    public abstract object GetDefaultValue();
 }
 
 /// Used for WorldStates with simple logic - it doesn't need to be comparable (usually EQUAL logic)
 /// </summary>
 /// <typeparam name="ValueType"></typeparam>
-public class StateVarKey<ValueType> : IStateVarKey<ValueType> {
+public class StateVarKey<ValueType> : AStateVarKey<ValueType> {
 
-    public virtual IStateVariableLogic logic { protected set; get; }
-    public string Name { protected set; get; }
+    public override IStateVariableLogic Logic { protected set; get; }
+    public override string Name { protected set; get; }
+
     private ValueType defaultValue;
     protected Func<object, object, float> distanceFunc;
 
     public StateVarKey( string name, ValueType defaultValue ){
-        this.logic = StateVariableLogicFactory.GetWorldStateLogic<StateVariableLogicEquals>();
+        this.Logic = StateVariableLogicFactory.GetWorldStateLogic<StateVariableLogicEquals>();
         this.Name = name;
         this.defaultValue = defaultValue;
     }
@@ -38,18 +48,14 @@ public class StateVarKey<ValueType> : IStateVarKey<ValueType> {
         return string.Format( "WorldState[{0}]", typeof(ValueType).Name );
     }
 
-    public Type GetValueType() {
-        return typeof( ValueType );
-    }
-
-    ValueType IStateVarKey<ValueType>.GetDefaultValue(){
-        return defaultValue;
-    }
-
-    public float Distance(object a, object b){
+    public override float Distance(object a, object b){
         if (distanceFunc == null)
             return 1;
         return distanceFunc(a, b);
+    }
+
+    public override object GetDefaultValue() {
+        return defaultValue;
     }
 }
 
@@ -57,24 +63,22 @@ public class StateVarKey<ValueType> : IStateVarKey<ValueType> {
 /// Used for more advanced WorldStateLogics, that require IComparable value types
 /// </summary>
 /// <typeparam name="InnerType"></typeparam>
-/// <typeparam name="Logic"></typeparam>
-public class StateVarKeyComparable<InnerType,Logic> : StateVarKey<InnerType> 
+/// <typeparam name="LogicType"></typeparam>
+public class StateVarKeyComparable<InnerType,LogicType> : StateVarKey<InnerType> 
             where InnerType : IComparable 
-            where Logic : StateVariableLogic<IComparable>,new() {
-
-    public override IStateVariableLogic logic { protected set; get; }
+            where LogicType : StateVariableLogic<IComparable>,new() {
 
     public StateVarKeyComparable( string name, InnerType defaultValue ) : base( name, defaultValue ){
-        this.logic = StateVariableLogicFactory.GetWorldStateLogic<Logic>();
+        this.Logic = StateVariableLogicFactory.GetWorldStateLogic<LogicType>();
     }
 
     public StateVarKeyComparable(string name, InnerType defaultValue, Func<object,object,float> distanceFnc ) : base(name, defaultValue){
-        this.logic = StateVariableLogicFactory.GetWorldStateLogic<Logic>();
+        this.Logic = StateVariableLogicFactory.GetWorldStateLogic<LogicType>();
         this.distanceFunc = distanceFnc;
     }
 
     public override string ToString() {
-        return string.Format( "WorldState{1}[{0}]", typeof(InnerType).Name, logic.ToString() );
+        return string.Format( "WorldState{1}[{0}]", typeof(InnerType).Name, Logic.ToString() );
     }
 
 }
