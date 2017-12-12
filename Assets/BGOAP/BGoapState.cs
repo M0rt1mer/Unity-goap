@@ -8,7 +8,7 @@ using System.Linq;
 /// 
 /// </summary>
 public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumerable<KeyValuePair<IStateVarKey<object>, object>> {
-    // can change to object
+    
     private volatile Dictionary<IStateVarKey<object>, object> values;
 
     public BGoapState(BGoapState old)
@@ -31,15 +31,15 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
     /// <param name="a"></param>
     /// <param name="b"></param>
     /// <returns></returns>
-    public BGoapState Union( BGoapState a, BGoapState b ) {
+    public BGoapState Union( BGoapState b ) {
         BGoapState result;
-        lock(a.values) {
-            result = new BGoapState( a );
+        lock(values) {
+            result = new BGoapState( this );
         }
         lock(b.values) {
             foreach(var pair in b.values) {
-                if(a.values.ContainsKey( pair.Key )) { //value is contained in both a and b
-                    result.values[pair.Key] = pair.Key.logic.Add( a.values[pair.Key], b.values[pair.Key] ); // use this key's logic to combine the two values
+                if(values.ContainsKey( pair.Key )) { //value is contained in both a and b
+                    result.values[pair.Key] = pair.Key.logic.Add( values[pair.Key], b.values[pair.Key] ); // use this key's logic to combine the two values
                 } else result.values[pair.Key] = pair.Value; //value was only in b
             }
             return result;
@@ -69,33 +69,23 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
         return result;
     }
 
-    /// <summary>
-    /// Adds two extended states together. returns new extended states. respects WorldStateLogic
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <returns></returns>
-    public static BGoapState operator +(BGoapState a, BGoapState b)
-    {
-        BGoapState result;
-        lock (a.values)
-        {
-            result = new BGoapState(a);
-        }
-        lock (b.values)
-        {
-            foreach(var pair in b.values) {
-                if(a.values.ContainsKey( pair.Key )) { //value is contained in both a and b
-                    result.values[pair.Key] = pair.Key.logic.Add(a.values[pair.Key], b.values[pair.Key]); // use this key's logic to combine the two values
-                } else result.values[pair.Key] = pair.Value; //value was only in b
-            }
-            return result;
-        }
-    }
-
     public int Count
     {
         get { return values.Count; }
+    }
+
+    /// <summary>
+    /// Calculates distance from given world state to this requirement
+    /// </summary>
+    /// <returns></returns>
+    public float Distance( BGoapState from ) {
+        float distance = 0;
+        foreach (var pair in values) {
+            if (from.HasKey(pair.Key)) {
+                distance += pair.Key.distance( values[pair.Key], from.values[pair.Key] );
+            }
+        }
+        return distance;
     }
 
     /// <summary>

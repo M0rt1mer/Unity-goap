@@ -41,12 +41,12 @@ public class BGoapNode : INode<BGoapState>
             }
             //then add preconditions to the current goal state
             var preconditions = action.GetPreconditions( parentGoal, actionSettings, nextAction );
-            goal = goal + preconditions;
+            goal = goal.Union(preconditions);
             
             g += action.GetCost( parentGoal, actionSettings, nextAction );
 
         } else goal = parentGoal;
-        h = goal.Count;
+        h = goal.Distance( planner.GetCurrentAgent().GetMemory().GetWorldState() );
         // f(node) = g(node) + h(node)
         cost = g + h * heuristicMultiplier;
     }

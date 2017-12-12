@@ -14,6 +14,8 @@ public interface IStateVarKey<out ValueType>{
     IStateVariableLogic logic { get; }
     string name { get; }
     ValueType GetDefaultValue();
+    float distance(object a, object b);
+
 }
 
 /// Used for WorldStates with simple logic - it doesn't need to be comparable (usually EQUAL logic)
@@ -24,6 +26,7 @@ public class StateVarKey<ValueType> : IStateVarKey<ValueType> {
     public virtual IStateVariableLogic logic { protected set; get; }
     public string name { protected set; get; }
     private ValueType defaultValue;
+    protected Func<object, object, float> distanceFunc;
 
     public StateVarKey( string name, ValueType defaultValue ){
         this.logic = StateVariableLogicFactory.GetWorldStateLogic<StateVariableLogicEquals>();
@@ -42,6 +45,12 @@ public class StateVarKey<ValueType> : IStateVarKey<ValueType> {
     ValueType IStateVarKey<ValueType>.GetDefaultValue(){
         return defaultValue;
     }
+
+    public float distance(object a, object b){
+        if (distanceFunc == null)
+            return 1;
+        return distanceFunc(a, b);
+    }
 }
 
 /// <summary>
@@ -57,6 +66,11 @@ public class StateVarKeyComparable<InnerType,Logic> : StateVarKey<InnerType>
 
     public StateVarKeyComparable( string name, InnerType defaultValue ) : base( name, defaultValue ){
         this.logic = StateVariableLogicFactory.GetWorldStateLogic<Logic>();
+    }
+
+    public StateVarKeyComparable(string name, InnerType defaultValue, Func<object,object,float> distanceFnc ) : base(name, defaultValue){
+        this.logic = StateVariableLogicFactory.GetWorldStateLogic<Logic>();
+        this.distanceFunc = distanceFnc;
     }
 
     public override string ToString() {
