@@ -2,23 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 /// <summary>
 /// 
 /// </summary>
-public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<KeyValuePair<IStateVarKey, object>> {
+public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumerable<KeyValuePair<IStateVarKey<object>, object>> {
     // can change to object
-    private volatile Dictionary<IStateVarKey, object> values;
+    private volatile Dictionary<IStateVarKey<object>, object> values;
 
     public BGoapState(BGoapState old)
     {
         lock (old.values)
-            values = new Dictionary<IStateVarKey, object>(old.values);
+            values = new Dictionary<IStateVarKey<object>, object>(old.values);
     }
 
     public BGoapState()
     {
-        values = new Dictionary<IStateVarKey, object>();
+        values = new Dictionary<IStateVarKey<object>, object>();
     }
 
 
@@ -57,14 +58,12 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         BGoapState result = new BGoapState();
         lock(values) lock(other.values) {
                 foreach(var key in values.Keys) {
-                    if( other.HasKey( key ) ) { //value exists
-                        if( !key.logic.Satisfies( other.values[key], values[key] ) )
-                            result.values.Add( key, values[key] );
-                    } else if(other is IStateVarKeyDefaultable) { //value doesn't exists BUT subtractor has default value
-                        if(!key.logic.Satisfies( (other as IStateVarKeyDefaultable).GetDefaultValue(), values[key] ))
-                            result.values.Add( key, values[key] );
-                    } else //value doesn't exist - don't subtract
-                        result.values.Add( key, values[key] );
+                    if (other.HasKey(key)) { //value exists
+                        if (!key.logic.Satisfies(other.values[key], values[key]))
+                            result.values.Add(key, values[key]);
+                    }
+                    else if (!key.logic.Satisfies(key.GetDefaultValue(), values[key]))
+                        result.values.Add(key, values[key]);
                 }
             }
         return result;
@@ -156,33 +155,32 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         }
     }
 
-    public T Get<T>(StateVarKey<T> key)
-    {
+    public T Get<T>(IStateVarKey<T> key) {
         lock (values)
         {
-            if (!values.ContainsKey(key))
+            if (!values.ContainsKey( (IStateVarKey<object>) key ))
                 return default(T);
-            return (T)values[key];
+            return (T)values[(IStateVarKey<object>)key];
         }
     }
 
-    public void Set<T>( StateVarKey<T> key, T value)
+    public void Set<T>( IStateVarKey<T> key, T value)
     {
         lock (values)
         {
-            values[key] = value;
+            values[(IStateVarKey<object>)key] = value;
         }
     }
 
-    public void Remove<T>( StateVarKey<T> key )
+    public void Remove<T>( IStateVarKey<T> key )
     {
         lock (values)
         {
-            values.Remove(key);
+            values.Remove((IStateVarKey<object>)key);
         }
     }
 
-    public void SetFrom( IStateVarKey state, BGoapState otherState ) {
+    public void SetFrom( IStateVarKey<object> state, BGoapState otherState ) {
         values[state] = otherState.values[state];
     }
 
@@ -190,26 +188,26 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         return values.Count == 0;
     }
 
-    public bool HasKey( IStateVarKey key )
+    public bool HasKey( IStateVarKey<object> key )
     {
         lock (values)
             return values.ContainsKey(key);
     }
 
-    public void Clear()
-    {
+    public void Clear(){
         values.Clear();
     }
 
-    public IEnumerator<IStateVarKey> GetEnumerator() {
-        return values.Keys.GetEnumerator();
+    public IEnumerator<IStateVarKey<object>> GetEnumerator() {
+        //return values.Keys.GetEnumerator().Cast<IStateVarKey<object>>();
+        return null;
     }
 
     IEnumerator IEnumerable.GetEnumerator() {
         return values.Keys.GetEnumerator();
     }
 
-    IEnumerator<KeyValuePair<IStateVarKey, object>> IEnumerable<KeyValuePair<IStateVarKey, object>>.GetEnumerator() {
-        return ((IEnumerable<KeyValuePair<IStateVarKey, object>>)values).GetEnumerator();
+    IEnumerator<KeyValuePair<IStateVarKey<object>, object>> IEnumerable<KeyValuePair<IStateVarKey<object>, object>>.GetEnumerator() {
+        return ((IEnumerable<KeyValuePair<IStateVarKey<object>, object>>)values).GetEnumerator();
     }
 }
