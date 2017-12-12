@@ -20,8 +20,8 @@ public class AStarDebugNode : Node {
     public override string ToString() {
         BGoapNode node = content as BGoapNode;
         if( node.action != null )
-            return node.GetCost() +  "     " + node.action + "\n\n" + string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey, object>>).Select( x=> (x.Key.name + ":" + x.Value) ).ToArray() );
-        return string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey, object>>).Select( x => (x.Key.name + ":" + x.Value) ).ToArray() );
+            return node.GetCost() +  "     " + node.action + "\n\n" + string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey<object>, object>>).Select( x=> (x.Key.Name + ":" + x.Value) ).ToArray() );
+        return string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey<object>, object>>).Select( x => (x.Key.Name + ":" + x.Value) ).ToArray() );
     }
 
     public override Color GetColor() {

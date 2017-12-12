@@ -22,7 +22,6 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
         values = new Dictionary<IStateVarKey<object>, object>();
     }
 
-
     /// <summary>
     /// A ∪ B
     //  for each variable v in both A and B, resulting set contains v( A) + v( B)
@@ -82,7 +81,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
         float distance = 0;
         foreach (var pair in values) {
             if (from.HasKey(pair.Key)) {
-                distance += pair.Key.distance( values[pair.Key], from.values[pair.Key] );
+                distance += pair.Key.Distance( values[pair.Key], from.values[pair.Key] );
             }
         }
         return distance;
@@ -140,7 +139,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
         {
             var result = "";
             foreach (var pair in values)
-                result += string.Format("'{0}': {1}, ", pair.Key.name, pair.Value);
+                result += string.Format("'{0}': {1}, ", pair.Key.Name, pair.Value);
             return result;
         }
     }

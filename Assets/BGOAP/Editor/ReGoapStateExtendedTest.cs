@@ -1,14 +1,32 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using UnityEngine.TestTools;
 
 public class ReGoapStateTest {
 
-    StateVarKey<float> wsEqual = new StateVarKey<float>("equal");
+    StateVarKey<float> wsEqual = new StateVarKey<float>("equal",-1);
 
-    StateVarKey<float> wsAtLeast = new StateVarKeyComparable<float,StateVariableLogicAtLeast>("at least");
+    StateVarKey<float> wsAtLeast = new StateVarKeyComparable<float,StateVariableLogicAtLeast>("at least",0);
 
-    StateVarKey<float> wsAtMost = new StateVarKeyComparable<float,StateVariableLogicAtMost>("at most");
+    StateVarKey<float> wsAtMost = new StateVarKeyComparable<float,StateVariableLogicAtMost>("at most",float.MaxValue);
+
+    [Test]
+    public void _0_Covariance() {
+
+        IEnumerable<float> enumString = new float[10];
+        IEnumerable<object> enumObject = (IEnumerable<object>) enumString;
+
+        IStateVarKey<object> obj = (IStateVarKey<object>) wsEqual;
+
+        Assert.NotNull( obj );
+
+        obj = wsAtLeast as IStateVarKey<object>;
+        obj = wsAtMost as IStateVarKey<object>;
+
+    }
+
+
 
     [Test]
     public void _1_plusOperator() {
@@ -19,20 +37,20 @@ public class ReGoapStateTest {
         stateA.Set(wsEqual, 1f);
         stateB.Set(wsEqual, 2f);
         BGoapState stateC;
-        Assert.Throws<ArgumentException>( () => { stateC = stateA + stateB; }, "Two conflicting states" );
+        Assert.Throws<ArgumentException>( () => { stateC = stateA.Union( stateB ); }, "Two conflicting states" );
 
         stateB.Clear();
         stateA.Clear();
         stateA.Set(wsAtLeast, 5f);
         stateB.Set(wsAtLeast, 9f);
-        stateC = stateA + stateB;
+        stateC = stateA.Union( stateB );
         Assert.AreEqual(9f,stateC.Get(wsAtLeast), "Two AT_LEAST states");
 
         stateA.Clear();
         stateB.Clear();
         stateA.Set(wsAtMost, 4f);
         stateB.Set(wsAtMost, 9f);
-        stateC = stateA + stateB;
+        stateC = stateA.Union( stateB );
         Assert.AreEqual( 4f, stateC.Get(wsAtMost), "Two AT_MOST states" );
 
     }
@@ -109,7 +127,7 @@ public class ReGoapStateTest {
         eff.Set( wsEqual, 4 );
         goal.Set( wsEqual, 4 );
         difference = goal.Difference( eff );
-        Assert.IsFalse( difference.HasKey( wsEqual ), "subtracting two identical EQUAL values" );
+        Assert.IsFalse( difference.HasKey( (IStateVarKey<object>) wsEqual ), "subtracting two identical EQUAL values" );
 
         eff.Clear();
         eff.Set( wsEqual, 5 );
@@ -127,7 +145,7 @@ public class ReGoapStateTest {
         eff.Set( wsAtLeast, 15 );
 
         difference = goal.Difference( eff );
-        Assert.IsFalse( difference.HasKey( wsAtLeast ), "At least, 10 \\ 5" );
+        Assert.IsFalse( difference.HasKey( (IStateVarKey<object>) wsAtLeast ), "At least, 10 \\ 5" );
 
         goal.Clear();
         eff.Clear();
@@ -135,7 +153,7 @@ public class ReGoapStateTest {
 
         eff.Set( wsAtMost, 5 );
         difference = goal.Difference( eff );
-        Assert.IsFalse( difference.HasKey( wsAtMost ), "At most, 10 \\ 5" );
+        Assert.IsFalse( difference.HasKey( (IStateVarKey<object>) wsAtMost ), "At most, 10 \\ 5" );
 
         eff.Set( wsAtMost, 15 );
         difference = goal.Difference( eff );
@@ -167,11 +185,11 @@ public class ReGoapStateTest {
 
         var preEff2 = preEff3.Difference( eff2 );
 
-        Assert.IsFalse( preEff2.HasKey( wsAtMost ), "initial set contains wsAtMost" );
-        Assert.IsFalse( preEff2.HasKey( wsAtLeast ), "initial set contains wsAtLeast" );
-        Assert.IsFalse( preEff2.HasKey( wsEqual ), "initial set contains wsEqual" );
+        Assert.IsFalse( preEff2.HasKey( (IStateVarKey<object>)wsAtMost ), "initial set contains wsAtMost" );
+        Assert.IsFalse( preEff2.HasKey( (IStateVarKey<object>) wsAtLeast ), "initial set contains wsAtLeast" );
+        Assert.IsFalse( preEff2.HasKey( (IStateVarKey<object>) wsEqual ), "initial set contains wsEqual" );
 
-        var reconstructedGoal = preEff2 + eff2 + eff3 + eff4;
+        var reconstructedGoal = preEff2.Union( eff2 ).Union( eff3 ).Union( eff4 );
 
         Assert.AreEqual( 10, reconstructedGoal.Get( wsEqual ), "reconstructed goal EQUAL test" );
         Assert.IsTrue( reconstructedGoal.Get( wsAtLeast ) >= 25, "reconstructed goal AT_LEAST test" );

@@ -12,9 +12,9 @@ using UnityEngine;
 public interface IStateVarKey<out ValueType>{
 
     IStateVariableLogic logic { get; }
-    string name { get; }
+    string Name { get; }
     ValueType GetDefaultValue();
-    float distance(object a, object b);
+    float Distance(object a, object b);
 
 }
 
@@ -24,13 +24,13 @@ public interface IStateVarKey<out ValueType>{
 public class StateVarKey<ValueType> : IStateVarKey<ValueType> {
 
     public virtual IStateVariableLogic logic { protected set; get; }
-    public string name { protected set; get; }
+    public string Name { protected set; get; }
     private ValueType defaultValue;
     protected Func<object, object, float> distanceFunc;
 
     public StateVarKey( string name, ValueType defaultValue ){
         this.logic = StateVariableLogicFactory.GetWorldStateLogic<StateVariableLogicEquals>();
-        this.name = name;
+        this.Name = name;
         this.defaultValue = defaultValue;
     }
 
@@ -46,7 +46,7 @@ public class StateVarKey<ValueType> : IStateVarKey<ValueType> {
         return defaultValue;
     }
 
-    public float distance(object a, object b){
+    public float Distance(object a, object b){
         if (distanceFunc == null)
             return 1;
         return distanceFunc(a, b);

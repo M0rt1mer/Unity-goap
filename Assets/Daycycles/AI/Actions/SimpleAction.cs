@@ -75,7 +75,7 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     /// <returns></returns>
     protected BGoapState ExtractEffectsFromGoal( BGoapState goalState ) {
             BGoapState newState = new BGoapState( staticEffects );
-            foreach(IStateVarKey state in parametrizedEffectsWithDefaults) {
+            foreach(IStateVarKey<object> state in parametrizedEffectsWithDefaults) {
                 if(goalState.HasKey( state ))
                     newState.SetFrom( state, goalState );
                 else
@@ -111,7 +111,7 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
         if(variablePreconditions == null || variablePreconditions.IsEmpty() )
             return staticPreconditions;
         else {
-            return staticPreconditions + variablePreconditions;
+            return staticPreconditions.Union(variablePreconditions);
         }
     }
 
