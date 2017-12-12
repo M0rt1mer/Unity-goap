@@ -80,7 +80,8 @@ public class SimpleActionGetItemFromStash<Settings> : SimpleAction<Settings> whe
 
     public override bool CheckProceduralCondition( IReGoapAgent goapAgent, IReGoapActionSettings settings, BGoapState goalState, IReGoapAction nextAction ) {
         //Debug.Log( settings );
-        return (settings as SimpleActionGetItemFromStashSettings).stash != null;
+        SimpleActionGetItemFromStashSettings sett = settings as SimpleActionGetItemFromStashSettings;
+        return sett.effects.Get( WorldStateMinItemCategory.GetStateForItem( tmpSolution_category ) ) > 0 && sett.stash != null;
     }
 
 }
