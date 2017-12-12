@@ -3,23 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 /// <summary>
 /// 
 /// </summary>
 public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumerable<KeyValuePair<IStateVarKey<object>, object>> {
     // can change to object
-    private volatile Dictionary<IStateVarKey<object>, object> values;
+    private volatile Dictionary<VariableKeyWrapper, object> values;
 
     public BGoapState(BGoapState old)
     {
         lock (old.values)
-            values = new Dictionary<IStateVarKey<object>, object>(old.values);
+            values = new Dictionary<VariableKeyWrapper, object>(old.values);
     }
 
     public BGoapState()
     {
-        values = new Dictionary<IStateVarKey<object>, object>();
+        values = new Dictionary<VariableKeyWrapper, object>();
     }
 
 
@@ -31,15 +32,15 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
     /// <param name="a"></param>
     /// <param name="b"></param>
     /// <returns></returns>
-    public BGoapState Union( BGoapState a, BGoapState b ) {
+    public BGoapState Union(BGoapState b) {
         BGoapState result;
-        lock(a.values) {
-            result = new BGoapState( a );
+        lock (values) {
+            result = new BGoapState(this);
         }
-        lock(b.values) {
-            foreach(var pair in b.values) {
-                if(a.values.ContainsKey( pair.Key )) { //value is contained in both a and b
-                    result.values[pair.Key] = pair.Key.logic.Add( a.values[pair.Key], b.values[pair.Key] ); // use this key's logic to combine the two values
+        lock (b.values) {
+            foreach (var pair in b.values) {
+                if (values.ContainsKey(pair.Key)) { //value is contained in both a and b
+                    result.values[pair.Key] = pair.Key.Add(this, b); // use this key's logic to combine the two values
                 } else result.values[pair.Key] = pair.Value; //value was only in b
             }
             return result;
@@ -54,15 +55,15 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public BGoapState Difference( BGoapState other ) {
+    public BGoapState Difference(BGoapState other) {
         BGoapState result = new BGoapState();
-        lock(values) lock(other.values) {
-                foreach(var key in values.Keys) {
+        lock (values) lock (other.values) {
+                foreach (var key in values.Keys) {
                     if (other.HasKey(key)) { //value exists
-                        if (!key.logic.Satisfies(other.values[key], values[key]))
+                        if (!key.Satisfies(other, this))
                             result.values.Add(key, values[key]);
                     }
-                    else if (!key.logic.Satisfies(key.GetDefaultValue(), values[key]))
+                    else if ( !key.IsSatisfiedByDefault(this) )
                         result.values.Add(key, values[key]);
                 }
             }
@@ -84,9 +85,9 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
         }
         lock (b.values)
         {
-            foreach(var pair in b.values) {
-                if(a.values.ContainsKey( pair.Key )) { //value is contained in both a and b
-                    result.values[pair.Key] = pair.Key.logic.Add(a.values[pair.Key], b.values[pair.Key]); // use this key's logic to combine the two values
+            foreach (var pair in b.values) {
+                if ( a.values.ContainsKey(pair.Key) ) { //value is contained in both a and b
+                    result.values[pair.Key] = pair.Key.Add(a, b); // use this key's logic to combine the two values
                 } else result.values[pair.Key] = pair.Value; //value was only in b
             }
             return result;
@@ -109,11 +110,11 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
 
         //check effects
         foreach (var key in values.Keys) {
-            if(effects.HasKey( key )) {
-                if(key.logic.IsConflict( values[key], effects.values[key] ))
+            if (effects.HasKey(key)) {
+                if (key.IsConflict( this, effects ) )
                     return true;
-            } else if(precond.HasKey( key )) { //only check precond, if this value was not changed 
-                if(key.logic.IsConflict( values[key], precond.values[key] ))
+            } else if (precond.HasKey(key)) { //only check precond, if this value was not changed 
+                if (key.IsConflict( this, precond ) )
                     return true;
             }
         }
@@ -128,14 +129,14 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
     public bool DoesFullfillGoal(BGoapState goal)
     {
         lock (values) lock (goal.values)
-        {
-            foreach ( var pair in goal.values ){
-                    if( goal.HasKey( pair.Key ) )
-                        if( pair.Key.logic.Satisfies( pair.Value, goal.values[pair.Key] ) ) //if variable gets canceled out, it means that it fulfilled goal
+            {
+                foreach (var key in values.Keys) {
+                    if ( goal.HasKey( key) )
+                        if ( key.Satisfies(this, goal)) //if variable gets canceled out, it means that it fulfilled goal
                             return true;
+                }
+                return false;
             }
-            return false;
-        }
     }
 
     public object Clone()
@@ -158,40 +159,45 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
     public T Get<T>(IStateVarKey<T> key) {
         lock (values)
         {
-            if (!values.ContainsKey( (IStateVarKey<object>) key ))
+            VariableKeyWrapper wrapper = Wrap(key);
+            if (!values.ContainsKey(wrapper))
                 return default(T);
-            return (T)values[(IStateVarKey<object>)key];
+            return (T)values[wrapper];
         }
     }
 
-    public void Set<T>( IStateVarKey<T> key, T value)
+    public void Set<T>(IStateVarKey<T> key, T value)
     {
         lock (values)
         {
-            values[(IStateVarKey<object>)key] = value;
+            values[Wrap(key)] = value;
         }
     }
 
-    public void Remove<T>( IStateVarKey<T> key )
+    public void Remove<T>(IStateVarKey<T> key)
     {
         lock (values)
         {
-            values.Remove((IStateVarKey<object>)key);
+            values.Remove(Wrap(key));
         }
     }
 
-    public void SetFrom( IStateVarKey<object> state, BGoapState otherState ) {
-        values[state] = otherState.values[state];
+    private void SetFrom(VariableKeyWrapper wrapper, BGoapState otherState) {
+        values[wrapper] = otherState.values[wrapper];
     }
 
     public bool IsEmpty() {
         return values.Count == 0;
     }
 
-    public bool HasKey( IStateVarKey<object> key )
+    public bool HasKey<T>(IStateVarKey<T> key)
     {
+        return HasKey(Wrap(key));
+    }
+
+    private bool HasKey(VariableKeyWrapper wrapper) {
         lock (values)
-            return values.ContainsKey(key);
+            return values.ContainsKey(wrapper);
     }
 
     public void Clear(){
@@ -210,4 +216,46 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey<object>>, IEnumer
     IEnumerator<KeyValuePair<IStateVarKey<object>, object>> IEnumerable<KeyValuePair<IStateVarKey<object>, object>>.GetEnumerator() {
         return ((IEnumerable<KeyValuePair<IStateVarKey<object>, object>>)values).GetEnumerator();
     }
+
+    ///optionally
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private VariableKeyWrapper Wrap<ValueType>( IStateVarKey<ValueType> key ){
+        return new VariableKeyWrapper<ValueType>(key);
+    }
+
+    private interface VariableKeyWrapper {
+
+        string name { get; }
+
+        bool Satisfies(BGoapState a, BGoapState b);
+
+        bool IsConflict(BGoapState a, BGoapState b);
+
+        object Add(BGoapState a, BGoapState b);
+
+        //TODO: remove this from GoapNode
+        bool IsSatisfiedByDefault(BGoapState goal);
+
+    }
+
+
+    private struct VariableKeyWrapper<ValueType> : VariableKeyWrapper {
+
+        private IStateVarKey<ValueType> key;
+
+        public VariableKeyWrapper(IStateVarKey<ValueType> key){
+            this.key = key;
+        }
+
+        public string name => key.name;
+
+        public bool Satisfies(BGoapState a, BGoapState b) => key.logic.Satisfies(a.Get(key), b.Get(key));
+
+        public bool IsConflict(BGoapState a, BGoapState b) => key.logic.IsConflict(a.Get(key), b.Get(key));
+
+        public object Add(BGoapState a, BGoapState b) => key.logic.Add(a.Get(key), b.Get(key));
+
+        public bool IsSatisfiedByDefault(BGoapState goal) => key.logic.Satisfies(key.GetDefaultValue(), goal.Get(key));
+    }
+
 }
