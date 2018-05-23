@@ -176,7 +176,7 @@ public class GoapPlannerManager : MonoBehaviour
                 ReGoapLogger.Log( "[GoapPlannerManager] Done calculating plan, actions list:" );
                 var i = 0;
                 foreach(var action in work.NewGoal.GetPlan()) {
-                    ReGoapLogger.Log( string.Format( "{0}: {1}", i++, action.Action ) );
+                    ReGoapLogger.Log( string.Format( "{0}: {1}", i++, action.Action.GetName() ) );
                 }
             }
 #endif

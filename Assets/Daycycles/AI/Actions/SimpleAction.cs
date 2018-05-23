@@ -30,12 +30,15 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     private BGoapState staticEffects;
     private BGoapState parametrizedEffectsWithDefaults;
     private BGoapState staticPreconditions;
+    private string actionName; //Object.name cannot be accessed from other threads
+
 
     public void OnEnable(){
         staticEffects = new BGoapState();
         staticPreconditions = new BGoapState();
         parametrizedEffectsWithDefaults = new BGoapState();
         InitializePreconditionsAndEffects(  staticEffects, ref parametrizedEffectsWithDefaults,  staticPreconditions );
+        actionName = name;
     }
 
     #region ========================================================================================================  overridable
@@ -120,12 +123,12 @@ public abstract class SimpleAction <Settings> : SimpleActionBase where Settings 
     }
 
     public override string GetName() {
-        return name;
+        return actionName;
     }
     #endregion
 
     public override string ToString() {
-        return name;
+        return actionName;
     }
 
     #region =========================================================================================================================== not implemented

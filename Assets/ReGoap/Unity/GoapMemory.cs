@@ -30,8 +30,8 @@ public class GoapMemory : MonoBehaviour, IReGoapMemory
     {
     }
 
-    protected virtual void Update()
-    {
+    protected virtual void Update(){
+        state.Clear();
         foreach (var sensor in sensors)
         {
             sensor.UpdateSensor();
