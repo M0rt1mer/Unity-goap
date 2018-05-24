@@ -12,4 +12,9 @@ public class InGameItem : MonoBehaviour  {
         positionCache = transform.position;
     }
 
+    public override string ToString()
+    {
+        return name;
+    }
+
 }

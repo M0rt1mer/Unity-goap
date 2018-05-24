@@ -27,6 +27,8 @@ public class RPGHands : GoapSensor {
         }
         this.rightHandItem = item;
         rightHandItem.transform.SetParent(GameObject.Find("B_R_Hand").transform, false);
+        rightHandItem.transform.localPosition = new Vector3(0, 0, 0);
+        rightHandItem.transform.localRotation = Quaternion.identity;
     }
 
     public void DropItemRight() {

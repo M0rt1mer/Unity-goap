@@ -15,6 +15,7 @@ public class Inventory : GoapSensor {
             if (itm != null)
             {
                 GameObject newItem = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                newItem.name = "an item("+itm.name+")";
                 newItem.transform.localScale = new Vector3(0.2f,0.2f,0.2f);
                 newItem.transform.SetParent(gameObject.transform);
                 InGameItem newInGameItem = newItem.AddComponent<InGameItem>();

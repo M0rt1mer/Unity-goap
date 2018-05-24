@@ -5,11 +5,11 @@ public abstract class WorldStates {
 
     public static StateVarKey<Vector3> STATE_POSITION = new StateVarKey<Vector3>( "position", default( Vector3 ) );// = "isAtPosition";
     public static StateVarKey<float> STATE_FLOAT_SATURATION = new StateVarKeyComparable<float, StateVariableLogicAtLeast>( "saturation", 0, ( (from,to) => { return 3*((float)to-(float)from); } ) ); // "at least X saturation"
-    public static StateVarKey<DBItem> STATE_HAND_LEFT = new StateVarKey<DBItem>( "hand_left", default( DBItem ) );
-    public static StateVarKey<DBItem> STATE_HAND_RIGHT = new StateVarKey<DBItem>( "hand_right", default( DBItem ) );
+    public static StateVarKey<DBItem> STATE_HAND_LEFT = new StateVarKey<DBItem>( "LH_type", default( DBItem ) );
+    public static StateVarKey<DBItem> STATE_HAND_RIGHT = new StateVarKey<DBItem>( "RH_type", default( DBItem ) );
 
-    public static StateVarKey<InGameItem> STATE_HAND_LEFT_ITEM = new StateVarKey<InGameItem>("hand_left_item", null );
-    public static StateVarKey<InGameItem> STATE_HAND_RIGHT_ITEM = new StateVarKey<InGameItem>("hand_right_item", null );
+    public static StateVarKey<InGameItem> STATE_HAND_LEFT_ITEM = new StateVarKey<InGameItem>("LH_item", null );
+    public static StateVarKey<InGameItem> STATE_HAND_RIGHT_ITEM = new StateVarKey<InGameItem>("RH_item", null );
 
 }
 

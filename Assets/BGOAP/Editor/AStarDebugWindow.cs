@@ -79,10 +79,14 @@ public class AStarDebugWindow : EditorWindow {
 
         IReGoapAgent[] agentList = AStarDebugRecorder.recordings.Keys.ToArray();
         selectedAgent = EditorGUILayout.Popup( selectedAgent, agentList.Select( x=> x.ToString() ).ToArray(), GUILayout.ExpandWidth(false) );
-        if(selectedAgent < agentList.Count()) {
-            AStarDebugRecording[] nodes = AStarDebugRecorder.recordings.GetValues( agentList[selectedAgent], false ).ToArray();
-            selectedSearch = EditorGUILayout.Popup( selectedSearch, nodes.Select( (node, index) => "search #"+index ).ToArray(), GUILayout.ExpandWidth( false ) );
+        if (selectedAgent < agentList.Count())
+        {
+            AStarDebugRecording[] nodes = AStarDebugRecorder.recordings.GetValues(agentList[selectedAgent], false).ToArray();
+            selectedSearch = EditorGUILayout.Popup(selectedSearch, nodes.Select((node, index) => "search #" + index).ToArray(), GUILayout.ExpandWidth(false));
             selectedRecording = nodes[selectedSearch];
+        }
+        else {
+            EditorGUILayout.Popup(0, new GUIContent[0]);
         }
 
         GUILayout.FlexibleSpace();
@@ -122,7 +126,7 @@ public class AStarDebugWindow : EditorWindow {
                 }
             }
 
-            graph = new AStarDebugGraph( childNodes, root );
+            graph = new AStarDebugGraph( childNodes, root, selectedRecording.goal );
             graph.Refresh();
             if(graph.IsEmpty()) {
                 ShowMessage( "No graph data" );

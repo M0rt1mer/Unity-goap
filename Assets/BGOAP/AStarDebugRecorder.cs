@@ -17,9 +17,11 @@ public class AStarDebugRecorder {
 public class AStarDebugRecording {
 
     public BGoapNode[] search;
+    public BGoapState goal;
 
-    public AStarDebugRecording( IEnumerable<BGoapNode> search ) {
+    public AStarDebugRecording( IEnumerable<BGoapNode> search, BGoapState goal) {
         this.search = search.ToArray();
+        this.goal = goal.Clone() as BGoapState;
     }
 
 }

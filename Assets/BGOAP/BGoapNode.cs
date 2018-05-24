@@ -90,9 +90,9 @@ public class BGoapNode : INode<BGoapState>
                 {
                     if (!effects.DoesFullfillGoal(goal))
                         yield return new ReGoapActionState(possibleAction, settings) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
-                    if (goal.HasConflict(precond, effects))
+                    else if (goal.HasConflict(precond, effects))
                         yield return new ReGoapActionState(possibleAction, settings) { isValid = false, reason = ReGoapActionState.InvalidReason.CONFLICT, preconditions = precond, effects = effects };
-                    if (!possibleAction.CheckProceduralCondition(agent, settings, goal, parent != null ? parent.action : null))
+                    else if (!possibleAction.CheckProceduralCondition(agent, settings, goal, parent != null ? parent.action : null))
                         yield return new ReGoapActionState(possibleAction, settings) { isValid = false, reason = ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION, preconditions = precond, effects = effects };
                 }
             }
@@ -156,7 +156,7 @@ public class BGoapNode : INode<BGoapState>
     /// <param name="goal"></param>
     /// <returns></returns>
     public bool IsGoal(BGoapState goal){
-        return this.goal.Difference( planner.GetCurrentAgent().GetMemory().GetWorldState(),true ).IsEmpty(); //do use defaults here
+        return this.goal.Difference( goal,true ).IsEmpty(); //do use defaults here
     }
 
     public float Priority { get; set; }

@@ -39,7 +39,7 @@ public class ReGoapPlanner : IGoapPlanner
             var goalState = currentGoal.GetGoalState();
 
             var leaf = (BGoapNode)astar.Run(
-                new BGoapNode(this, goalState, null, null), goalState, settings.MaxIterations, settings.PlanningEarlyExit);
+                new BGoapNode(this, goalState, null, null), goapAgent.GetMemory().GetWorldState(), settings.MaxIterations, settings.PlanningEarlyExit);
             if (leaf == null)
             {
                 currentGoal = null;

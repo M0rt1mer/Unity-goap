@@ -13,21 +13,24 @@ public class AStarDebugNode : Node {
     private static Color colorStart = new Color( 0, 0.8f, 0.8f );
     private static Color colorGoal = new Color( 1, 0.8f, 0 );
     private static Color colorNormal = new Color( 0, 0.8f, 0 );
+    bool isGoal;
 
-    public AStarDebugNode( object content, float weight = 1, bool active = false ) : base( content, weight, active ) {
+    public AStarDebugNode( object content, BGoapState goal, float weight = 1, bool active = false ) : base( content, weight, active ) {
+        isGoal = (content as BGoapNode).IsGoal(goal);
     }
 
     public override string ToString() {
         BGoapNode node = content as BGoapNode;
         if( node.action != null )
-            return node.GetPathCost() + "+" + node.GetHeuristicCost() +  "     " + node.action + "\n\n" + string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey, object>>).Select( x=> (x.Key.Name + ":" + x.Value) ).ToArray() );
+            return node.GetPathCost() + "+" + node.GetHeuristicCost() +  "     " + node.action + "\n\n" 
+                + string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey, object>>).Select( x=> (x.Key.Name + ":" + x.Value) ).ToArray() );
         return string.Join( "\n", ((content as BGoapNode).GetState() as IEnumerable<KeyValuePair<IStateVarKey, object>>).Select( x => (x.Key.Name + ":" + x.Value) ).ToArray() );
     }
 
     public override Color GetColor() {
         if((content as BGoapNode).GetParent() == null)
             return colorStart;
-        else if((content as BGoapNode).IsGoal( null ))
+        else if( isGoal )
             return colorGoal;
         else
             return colorNormal;
@@ -40,22 +43,24 @@ public class AStarDebugGraph : Graph {
 
     private MultiValueDictionary<BGoapNode, BGoapNode> childLists;
     private BGoapNode root;
+    private BGoapState goal;
 
-    public AStarDebugGraph( MultiValueDictionary<BGoapNode, BGoapNode> childLists, BGoapNode root ) {
+    public AStarDebugGraph( MultiValueDictionary<BGoapNode, BGoapNode> childLists, BGoapNode root, BGoapState goal ) {
         this.childLists = childLists;
         this.root = root;
+        this.goal = goal;
     }
 
     protected override IEnumerable<Node> GetChildren( Node node ) {
         BGoapNode goapNode = (node as AStarDebugNode).content as BGoapNode;
         if( childLists.ContainsKey( goapNode ) )
             foreach( var BGoapNode in childLists.GetValues( goapNode, true) ) {
-                yield return new AStarDebugNode( BGoapNode );
+                yield return new AStarDebugNode( BGoapNode, goal );
             }
     }
-
+    
     protected override void Populate() {
-        AddNodeHierarchy( new AStarDebugNode( root ) );
+        AddNodeHierarchy( new AStarDebugNode( root, goal ) );
     }
 
 }
@@ -114,7 +119,13 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
         bool oldSelectionFound = false;
         Vertex newSelectedVertex = null;
 
-        foreach(Vertex v in graphLayout.vertices) {
+        //clear selection
+        if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
+        {
+            selectedVertex = null;
+        }
+
+        foreach (Vertex v in graphLayout.vertices) {
             Vector2 nodeCenter = ScaleVertex( v.position, offset, scale ) - nodeSize / 2;
             var nodeRect = new Rect( nodeCenter.x, nodeCenter.y, nodeSize.x, nodeSize.y );
 
@@ -177,9 +188,9 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
                     GUILayout.BeginVertical( GUI.skin.box );
                     {
                         GUILayout.Label( actions[i].Action.ToString() );
-                        GUILayout.Label( actions[i].preconditions.ToString(), 
+                        GUILayout.Label(PlaceholderIfEmpty(actions[i].preconditions.ToString()), 
                             (!actions[i].isValid && actions[i].reason == ReGoapActionState.InvalidReason.CONFLICT) ? failedCondition : GUIStyle.none );
-                        GUILayout.Label( actions[i].effects.ToString(), 
+                        GUILayout.Label(PlaceholderIfEmpty(actions[i].effects.ToString()), 
                             (!actions[i].isValid && actions[i].reason == ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP) ? failedCondition : GUIStyle.none );
                         if(!actions[i].isValid && actions[i].reason == ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION)
                             GUILayout.Label( "PROCEDURAL CONDITION FAILED", failedCondition );
@@ -191,6 +202,13 @@ public class AStarDebugGraphRenderer : DefaultGraphRenderer {
             GUILayout.EndVertical();
         }
         GUILayout.EndArea();
+    }
+
+    private string PlaceholderIfEmpty(string str) {
+        if (str.Length == 0)
+            return "*****";
+        else
+            return str;
     }
 
     protected new Vector2 ScaleVertex( Vector2 v, Vector2 offset, Vector2 scaleFactor ) {

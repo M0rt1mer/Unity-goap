@@ -9,4 +9,9 @@ public class DBItem : ScriptableObject {
 
     public DBItemCategory[] categories;
 
+    public override string ToString()
+    {
+        return name;
+    }
+
 }
