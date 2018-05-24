@@ -28,7 +28,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
 
     protected PlanWork? currentPlanWorker;
 
-    public SimpleActionBase[] availableActions;
+    public AbstractExecutableAction[] availableActions;
 
     public bool IsPlanning
     {
@@ -79,7 +79,7 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         if (ValidateActiveAction)
         {
             var state = memory.GetWorldState();
-            if ( !currentActionState.Action.GetPreconditions(state, currentActionState.Settings).Difference(state).IsEmpty() )
+            if ( !currentActionState.Action.GetPreconditions(state, currentActionState.Settings).Difference(state,true).IsEmpty() )
                 TryWarnActionFailure(currentActionState);
         }
     }
@@ -88,23 +88,20 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
     protected virtual void UpdatePossibleGoals()
     {
         possibleGoalsDirty = false;
-        if (goalBlacklist.Count > 0)
+        possibleGoals = new List<IReGoapGoal>(goals.Count);
+        foreach (var goal in goals)
         {
-            possibleGoals = new List<IReGoapGoal>(goals.Count);
-            foreach (var goal in goals)
-                if (!goalBlacklist.ContainsKey(goal))
-                {
-                    possibleGoals.Add(goal);
-                }
-                else if (goalBlacklist[goal] < Time.time)
-                {
-                    goalBlacklist.Remove(goal);
-                    possibleGoals.Add(goal);
-                }
-        }
-        else
-        {
-            possibleGoals = goals;
+            if (goal is MonoBehaviour && !(goal as MonoBehaviour).enabled)
+                continue;
+            if (!goalBlacklist.ContainsKey(goal))
+            {
+                possibleGoals.Add(goal);
+            }
+            else if (goalBlacklist[goal] < Time.time)
+            {
+                goalBlacklist.Remove(goal);
+                possibleGoals.Add(goal);
+            }
         }
     }
 
@@ -189,7 +186,8 @@ public class GoapAgent : MonoBehaviour, IReGoapAgent
         var plan = currentGoal.GetPlan();
         if (plan.Count == 0)
         {
-            currentActionState.Action.Exit(currentActionState.Action);
+            if(currentActionState!=null)
+                currentActionState.Action.Exit(currentActionState.Action);
             currentActionState = null;
             CalculateNewGoal();
         }

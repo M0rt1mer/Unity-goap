@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InGameItem  {
+public class InGameItem : MonoBehaviour  {
 
-    public readonly DBItem sourceItem;
+    public DBItem sourceItem;
+    public Vector3 positionCache;
 
-    public InGameItem( DBItem sourceItem ) {
-        this.sourceItem = sourceItem;
+    public void Update()
+    {
+        positionCache = transform.position;
     }
 
 }

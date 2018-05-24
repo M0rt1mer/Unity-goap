@@ -109,25 +109,25 @@ public class ReGoapStateTest {
 
         eff.Set( wsEqual, 4 );
         goal.Set( wsEqual, 4 );
-        difference = goal.Difference( eff );
+        difference = goal.Difference( eff, false );
         Assert.IsFalse( difference.HasKey(  wsEqual ), "subtracting two identical EQUAL values" );
 
         eff.Clear();
         eff.Set( wsEqual, 5 );
 
-        Assert.Throws<ArgumentException>( () => goal.Difference(eff), "subtracting two different EQUAL values" );
+        Assert.Throws<ArgumentException>( () => goal.Difference(eff,false), "subtracting two different EQUAL values" );
 
         eff.Clear(); goal.Clear();
 
         goal.Set( wsAtLeast, 10 );
         eff.Set( wsAtLeast, 5 );
 
-        difference = goal.Difference( eff );
+        difference = goal.Difference( eff, false );
         Assert.AreEqual( 10, difference.Get( wsAtLeast ), "At least, 10 \\ 5" );
 
         eff.Set( wsAtLeast, 15 );
 
-        difference = goal.Difference( eff );
+        difference = goal.Difference( eff, false  );
         Assert.IsFalse( difference.HasKey(  wsAtLeast ), "At least, 10 \\ 5" );
 
         goal.Clear();
@@ -135,11 +135,11 @@ public class ReGoapStateTest {
         goal.Set( wsAtMost, 10 );
 
         eff.Set( wsAtMost, 5 );
-        difference = goal.Difference( eff );
+        difference = goal.Difference( eff, false );
         Assert.IsFalse( difference.HasKey( wsAtMost ), "At most, 10 \\ 5" );
 
         eff.Set( wsAtMost, 15 );
-        difference = goal.Difference( eff );
+        difference = goal.Difference( eff, false );
         Assert.AreEqual( 10, difference.Get( wsAtMost ), "At most, 10 \\ 5" );
 
     }
@@ -156,17 +156,17 @@ public class ReGoapStateTest {
         BGoapState eff4 = new BGoapState();
         eff4.Set( wsAtLeast, 20 );
         eff4.Set( wsAtMost, 2 );
-        var preEff4 = goal.Difference( eff4 );
+        var preEff4 = goal.Difference( eff4, false );
 
         BGoapState eff3 = new BGoapState();
         eff3.Set( wsEqual, 10 );
-        var preEff3 = preEff4.Difference( eff3 );
+        var preEff3 = preEff4.Difference( eff3, false );
 
         BGoapState eff2 = new BGoapState();
         eff2.Set( wsAtLeast, 40 );
         eff2.Set( wsAtMost, 15 );
 
-        var preEff2 = preEff3.Difference( eff2 );
+        var preEff2 = preEff3.Difference( eff2, false );
 
         Assert.IsFalse( preEff2.HasKey( wsAtMost ), "initial set contains wsAtMost" );
         Assert.IsFalse( preEff2.HasKey( wsAtLeast ), "initial set contains wsAtLeast" );

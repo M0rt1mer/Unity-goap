@@ -19,7 +19,7 @@ public interface IReGoapAction
     float GetCost(BGoapState goalState, IReGoapActionSettings settings, IReGoapAction next = null);
 
 
-
+    IEnumerable<IReGoapActionSettings> MultiPrecalculations(IReGoapAgent goapAgent, BGoapState goalState);
     IReGoapActionSettings Precalculations(IReGoapAgent goapAgent, BGoapState goalState);
 }
 

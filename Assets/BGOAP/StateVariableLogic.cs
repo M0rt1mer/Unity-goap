@@ -91,7 +91,7 @@ public class StateVariableLogicEquals : StateVariableLogic<object> {
     }
 
     public override bool Satisfies( object what, object whom ) {
-        return what != null && whom != null && (what == whom || what.Equals( whom ) );
+        return ( what==null && whom==null ) || (what != null && whom != null && (what == whom || what.Equals( whom ) ) );
     }
 }
 

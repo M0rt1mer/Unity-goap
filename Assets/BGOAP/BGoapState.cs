@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 
+/// Two functions:
+/// a) checked container - indexed by StateVarKey<KEY>, checks if inserted values is of type KEY
+/// b) operations on values: union, difference, distance,...
+/// TODO: extract a) to superclass "CheckedContainer"
 /// </summary>
 public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<KeyValuePair<IStateVarKey, object>> {
     // can change to object
@@ -50,16 +53,17 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
     ///    for each variable v in both A and B, resulting set contains v( A) if ¬(v( A)-v( B)) (if v( A)-v( B), then the resulting set doesn't contain v at all)
     ///    for each variable v only in A, resulting set contains v( A)
     /// </summary>
+    /// <param name="doUseDefaults">whether to use key defaults or not</param>
     /// <param name="other"></param>
     /// <returns></returns>
-    public BGoapState Difference( BGoapState other ) {
+    public BGoapState Difference( BGoapState other, bool doUseDefaults ) {
         BGoapState result = new BGoapState();
         lock(values) lock(other.values) {
                 foreach(var key in values.Keys) {
                     if( other.HasKey( key ) ) { //value exists
                         if( !key.Logic.Satisfies( other.values[key], values[key] ) )
                             result.values.Add( key, values[key] );
-                    } else if(!key.Logic.Satisfies( key.GetDefaultValue(), values[key] ))
+                    } else if( !(doUseDefaults && key.Logic.Satisfies( key.GetDefaultValue(), values[key] )) )
                             result.values.Add( key, values[key] );
                 }
             }
@@ -113,7 +117,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
     {
         lock (values) lock (goal.values)
         {
-            foreach ( var pair in goal.values ){
+            foreach ( var pair in values ){
                     if( goal.HasKey( pair.Key ) )
                         if( pair.Key.Logic.Satisfies( pair.Value, goal.values[pair.Key] ) ) //if variable gets canceled out, it means that it fulfilled goal
                             return true;
@@ -139,7 +143,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         }
     }
 
-    public T Get<T>(StateVarKey<T> key)
+    public T Get<T>(AStateVarKey<T> key)
     {
         lock (values)
         {
@@ -149,7 +153,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         }
     }
 
-    public void Set<T>( StateVarKey<T> key, T value)
+    public void Set<T>( AStateVarKey<T> key, T value)
     {
         lock (values)
         {
@@ -157,7 +161,7 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         }
     }
 
-    public void Remove<T>( StateVarKey<T> key )
+    public void Remove<T>( AStateVarKey<T> key )
     {
         lock (values)
         {
@@ -168,6 +172,45 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
     public void SetFrom( IStateVarKey state, BGoapState otherState ) {
         values[state] = otherState.values[state];
     }
+
+
+
+
+    //TODO: check for value type
+    public void SetFromKeyUntyped(IStateVarKey thisKey, IStateVarKey otherKey, BGoapState otherState ) {
+        values[thisKey] = otherState.values[otherKey];
+
+        Type thisKeyType = thisKey.GetType();
+        Type otherKeyType = otherKey.GetType();
+        if ( !thisKeyType.IsGenericType || !otherKeyType.IsGenericType || thisKeyType.GetGenericArguments()[0]!=otherKeyType.GetGenericArguments()[0] ) {
+            throw new ArgumentException("underlying type is different for " + thisKey + " and " + otherKey);
+        }
+        typeof(BGoapState).GetMethod("SetFromKey").MakeGenericMethod(thisKeyType.GetGenericArguments()[0]).Invoke(this, new object[] { thisKey, otherKey, otherState });
+    }
+
+    public void SetFromKey<T>(AStateVarKey<T> thisKey, AStateVarKey<T> otherKey, BGoapState otherState) {
+        values[thisKey] = otherState.values[otherKey];
+    }
+
+
+
+
+
+    public bool ValueEqualsUntyped(IStateVarKey thisKey, IStateVarKey otherKey, BGoapState otherState) {
+        Type thisKeyType = thisKey.GetType();
+        Type otherKeyType = otherKey.GetType();
+        if (!thisKeyType.IsGenericType || !otherKeyType.IsGenericType || thisKeyType.GetGenericArguments()[0] != otherKeyType.GetGenericArguments()[0])
+        {
+            throw new ArgumentException("underlying type is different for " + thisKey + " and " + otherKey);
+        }
+        return (bool) typeof(BGoapState).GetMethod("ValueEquals").MakeGenericMethod(thisKeyType.GetGenericArguments()[0]).Invoke(this, new object[] { thisKey, otherKey, otherState });
+    }
+
+    public bool ValueEquals<T>(AStateVarKey<T> thisKey, AStateVarKey<T> otherKey, BGoapState otherState) {
+        return HasKey(thisKey) && otherState.HasKey(otherKey) && values[thisKey] == otherState.values[otherKey];
+    }
+
+
 
     public bool IsEmpty() {
         return values.Count == 0;
@@ -195,4 +238,4 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
     IEnumerator<KeyValuePair<IStateVarKey, object>> IEnumerable<KeyValuePair<IStateVarKey, object>>.GetEnumerator() {
         return ((IEnumerable<KeyValuePair<IStateVarKey, object>>)values).GetEnumerator();
     }
-}
+};

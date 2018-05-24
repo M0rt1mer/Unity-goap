@@ -9,6 +9,7 @@ public class GoapMemory : MonoBehaviour, IReGoapMemory
     protected BGoapState state;
     private IReGoapSensor[] sensors;
     private SmartObject[] availableSoList;
+    private InGameItem[] availableItemList;
 
     #region UnityFunctions
     protected virtual void Awake()
@@ -48,7 +49,17 @@ public class GoapMemory : MonoBehaviour, IReGoapMemory
         return availableSoList;
     }
 
+    public InGameItem[] GetAvailableItemList() {
+        return availableItemList;
+    }
+
+
     public void SetAvailableSoList( SmartObject[] list ) {
         availableSoList = list;
+    }
+
+    public void SetAvailableItemList(InGameItem[] list)
+    {
+        availableItemList = list;
     }
 }

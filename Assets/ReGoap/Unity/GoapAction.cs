@@ -75,6 +75,11 @@ public class GoapAction : MonoBehaviour, IReGoapAction
         return null;
     }
 
+    public IEnumerable<IReGoapActionSettings> MultiPrecalculations(IReGoapAgent goapAgent, BGoapState goalState)
+    {
+        yield return Precalculations(goapAgent, goalState);
+    }
+
     public virtual bool CheckProceduralCondition(IReGoapAgent goapAgent, BGoapState goalState, IReGoapAction next = null)
     {
         return true;
@@ -133,4 +138,5 @@ public class GoapAction : MonoBehaviour, IReGoapAction
     {
         return Cost;
     }
+
 }

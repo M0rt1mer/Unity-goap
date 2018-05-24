@@ -8,6 +8,9 @@ public abstract class WorldStates {
     public static StateVarKey<DBItem> STATE_HAND_LEFT = new StateVarKey<DBItem>( "hand_left", default( DBItem ) );
     public static StateVarKey<DBItem> STATE_HAND_RIGHT = new StateVarKey<DBItem>( "hand_right", default( DBItem ) );
 
+    public static StateVarKey<InGameItem> STATE_HAND_LEFT_ITEM = new StateVarKey<InGameItem>("hand_left_item", null );
+    public static StateVarKey<InGameItem> STATE_HAND_RIGHT_ITEM = new StateVarKey<InGameItem>("hand_right_item", null );
+
 }
 
 public class WorldStateMinItem : StateVarKeyComparable<int, StateVariableLogicAtLeast> {

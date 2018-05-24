@@ -35,7 +35,7 @@ public class BGoapNode : INode<BGoapState>
             //first step - subtract effects of action
             var effects = action.GetEffects( parentGoal, actionSettings, nextAction );
             try {
-                goal = parentGoal.Difference( effects );
+                goal = parentGoal.Difference( effects, false ); //dont use defaults here, only subtract what really is in the effect
             } catch(ArgumentException e) {
                 Debug.Log( e );
             }
@@ -70,28 +70,32 @@ public class BGoapNode : INode<BGoapState>
 #endif
         var agent = planner.GetCurrentAgent();
         var actions = agent.GetActionsSet();
-        foreach (var possibleAction in actions) {
-                var settings = possibleAction.Precalculations( agent, goal );
-                var precond = possibleAction.GetPreconditions( goal, settings, action );
-                var effects = possibleAction.GetEffects( goal, settings, action );
-                if(effects.DoesFullfillGoal( goal ) && // any effect is the current goal
-                    !goal.HasConflict( precond, effects ) &&
-                    possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null )) {
-#if DEBUG
-                    yield return new ReGoapActionState( possibleAction, settings ) { preconditions = precond, effects = effects };
-#else
-                yield return new ReGoapActionState( possibleAction, settings );
-#endif
+        foreach (var possibleAction in actions)
+        {
+            foreach (var settings in possibleAction.MultiPrecalculations(agent, goal)) {
+                var precond = possibleAction.GetPreconditions(goal, settings, action);
+                var effects = possibleAction.GetEffects(goal, settings, action);
+                if (effects.DoesFullfillGoal(goal) && // any effect is the current goal
+                    !goal.HasConflict(precond, effects) &&
+                    possibleAction.CheckProceduralCondition(agent, settings, goal, parent != null ? parent.action : null))
+                {
+    #if DEBUG
+                    yield return new ReGoapActionState(possibleAction, settings) { preconditions = precond, effects = effects };
+    #else
+                    yield return new ReGoapActionState( possibleAction, settings );
+    #endif
                 }
-#if DEBUG
-            else if(includeInvalidAction) {
-                    if(!effects.DoesFullfillGoal( goal ))
-                        yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
-                    if(goal.HasConflict( precond, effects ))
-                        yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.CONFLICT, preconditions = precond, effects = effects };
-                    if(!possibleAction.CheckProceduralCondition( agent, settings, goal, parent != null ? parent.action : null ))
-                        yield return new ReGoapActionState( possibleAction, settings ) { isValid = false, reason = ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION, preconditions = precond, effects = effects };
+    #if DEBUG
+                else if (includeInvalidAction)
+                {
+                    if (!effects.DoesFullfillGoal(goal))
+                        yield return new ReGoapActionState(possibleAction, settings) { isValid = false, reason = ReGoapActionState.InvalidReason.EFFECTS_DONT_HELP, preconditions = precond, effects = effects };
+                    if (goal.HasConflict(precond, effects))
+                        yield return new ReGoapActionState(possibleAction, settings) { isValid = false, reason = ReGoapActionState.InvalidReason.CONFLICT, preconditions = precond, effects = effects };
+                    if (!possibleAction.CheckProceduralCondition(agent, settings, goal, parent != null ? parent.action : null))
+                        yield return new ReGoapActionState(possibleAction, settings) { isValid = false, reason = ReGoapActionState.InvalidReason.PROCEDURAL_CONDITION, preconditions = precond, effects = effects };
                 }
+            }
 #endif
         }
     }
@@ -152,7 +156,7 @@ public class BGoapNode : INode<BGoapState>
     /// <param name="goal"></param>
     /// <returns></returns>
     public bool IsGoal(BGoapState goal){
-        return this.goal.Difference( planner.GetCurrentAgent().GetMemory().GetWorldState() ).IsEmpty();
+        return this.goal.Difference( planner.GetCurrentAgent().GetMemory().GetWorldState(),true ).IsEmpty(); //do use defaults here
     }
 
     public float Priority { get; set; }
