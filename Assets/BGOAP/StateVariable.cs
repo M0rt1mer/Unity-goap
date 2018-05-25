@@ -25,6 +25,10 @@ public abstract class AStateVarKey<ValueType> : IStateVarKey {
 
     public abstract float Distance( object a, object b );
     public abstract object GetDefaultValue();
+
+    public ValueType GetTypedDefaultValue() {
+        return (ValueType)GetDefaultValue();
+    }
 }
 
 /// Used for WorldStates with simple logic - it doesn't need to be comparable (usually EQUAL logic)
@@ -81,6 +85,77 @@ public class StateVarKeyComparable<InnerType,LogicType> : StateVarKey<InnerType>
         return string.Format( "WorldState{1}[{0}]", typeof(InnerType).Name, Logic.ToString() );
     }
 
+}
+
+/*public interface IGenericStateVarKeyTemplate {
+    /// <summary>
+    /// TODO: make robust check
+    /// </summary>
+    /// <param name="argument"></param>
+    /// <returns></returns>
+    IStateVarKey MakeGenericInstance(object argument);
+}*/
+
+public interface IGenericStateVarKeyTemplate<GenericType>// : IGenericStateVarKeyTemplate
+{
+    IStateVarKey MakeGenericInstance(GenericType argument);
+}
+
+public class GenericStateVarKeyTemplate<ValueType, GenericType> : StateVarKey<ValueType>, IGenericStateVarKeyTemplate<GenericType>
+{
+    public GenericStateVarKeyTemplate(string name, ValueType defaultValue) : base(name, defaultValue)
+    {
+    }
+
+    public IStateVarKey MakeGenericInstance(object argument)
+    {
+        throw new NotImplementedException();
+    }
+
+    public GenericStateVarKey<ValueType, GenericType> MakeGenericInstance( GenericType argument ) {
+        return new GenericStateVarKey<ValueType, GenericType>(this, argument);
+    }
+
+    IStateVarKey IGenericStateVarKeyTemplate<GenericType>.MakeGenericInstance(GenericType argument)
+    {
+        return MakeGenericInstance((GenericType)argument);
+    }
+}
+
+/*public interface IGenericStateVarKey {
+    IGenericStateVarKeyTemplate GetParent();
+}*/
+
+public class GenericStateVarKey<ValueType, GenericArgument> : StateVarKey<ValueType>//, IGenericStateVarKey
+{
+    GenericStateVarKeyTemplate<ValueType, GenericArgument> parent;
+    GenericArgument argument;
+
+    public GenericStateVarKey(GenericStateVarKeyTemplate<ValueType, GenericArgument> parent, GenericArgument argument) :
+                    base( parent.Name + string.Format("<{0}>", "tmp" /*argument*/ ), parent.GetTypedDefaultValue() ) {
+        this.parent = parent;
+        this.argument = argument;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null)
+            return false;
+        if (!(obj is GenericStateVarKey<ValueType, GenericArgument>))
+            return false;
+        GenericStateVarKey<ValueType, GenericArgument> other = obj as GenericStateVarKey<ValueType, GenericArgument>;
+        return other.parent == parent && other.argument.Equals(argument);
+    }
+
+    public override int GetHashCode()
+    {
+        return parent.GetHashCode()^argument.GetHashCode();
+    }
+
+   /* public IGenericStateVarKeyTemplate GetParent()
+    {
+        return parent;
+    }*/
 }
 
 #endregion

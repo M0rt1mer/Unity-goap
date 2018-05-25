@@ -8,7 +8,10 @@ public class GenericSensor : GoapSensor {
 
         this.GetMemory().SetAvailableSoList( GameObject.FindObjectsOfType<SmartObject>() );
         this.GetMemory().SetAvailableItemList(GameObject.FindObjectsOfType<InGameItem>());
-        this.GetMemory().GetWorldState().Set( WorldStates.STATE_POSITION, transform.position );
+        BGoapState worldState = GetMemory().GetWorldState();
+        worldState.Set( WorldStates.STATE_POSITION, transform.position );
+        foreach (RPGSmartObjectSimpleState so in GameObject.FindObjectsOfType<RPGSmartObjectSimpleState>())
+            worldState.Set(so.GetIndicatingWorldState(), so.isStateOn );
     }
 
 }

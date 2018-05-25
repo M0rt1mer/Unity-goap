@@ -130,3 +130,33 @@ public class StateVariableLogicAtMost : StateVariableLogic<IComparable> {
         return (what != null && whom != null && ((IComparable)what).CompareTo( whom ) <= 0);
     }
 }
+
+
+/// <summary>
+/// this is not a good solution, as there can be no negatie elemtns
+/// </summary>
+public class StateVariableLogicSet : StateVariableLogic<HashSet<object>>
+{
+    public override object Add(object a, object b)
+    {
+        HashSet<object> combinedSet = new HashSet<object>( (HashSet<object>) a);
+        combinedSet.Add( (HashSet<object>) b);
+        return combinedSet;
+    }
+
+    public override bool IsConflict(object goal, object effect)
+    {
+        return false;
+    }
+
+    public override bool Satisfies(object what, object whom)
+    {
+        foreach (object obj in whom as HashSet<object>) {
+            if (!(what as HashSet<object>).Contains(whom))
+                return false;
+        }
+
+        return true;
+        
+    }
+}

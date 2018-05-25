@@ -11,6 +11,9 @@ public abstract class WorldStates {
     public static StateVarKey<InGameItem> STATE_HAND_LEFT_ITEM = new StateVarKey<InGameItem>("LH_item", null );
     public static StateVarKey<InGameItem> STATE_HAND_RIGHT_ITEM = new StateVarKey<InGameItem>("RH_item", null );
 
+    public static GenericStateVarKeyTemplate<bool, SmartObject> TABLE_SWEEPED = new GenericStateVarKeyTemplate<bool, SmartObject>( "table_sweeped", false );
+    public static GenericStateVarKeyTemplate<bool, SmartObject> GROUND_SWEEPED = new GenericStateVarKeyTemplate<bool, SmartObject>("ground_sweeped", false);
+
 }
 
 public class WorldStateMinItem : StateVarKeyComparable<int, StateVariableLogicAtLeast> {

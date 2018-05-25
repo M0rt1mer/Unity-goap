@@ -34,9 +34,18 @@ class PrototypeActionPickItemRight : PrototypeAction
         yield break;
     }
 
-    protected override IEnumerable<BGoapState> GetPossibleEffectSets(BGoapState lockInValues, IReGoapAgent goapAgent)
+    protected override IEnumerable<BGoapState> GetPossibleVariableCombinations(BGoapState lockInValues, IReGoapAgent goapAgent, BGoapState genericAssignments )
     {
-        if (lockInValues.HasKey(itemVariable) && lockInValues.Get(itemVariable) != null) //specific item locked in, fill in it's values
+        if (lockInValues.HasKey(itemVariable) && lockInValues.Get(itemVariable) == null) //this should be handled by place/drop item
+            yield break;
+        if (lockInValues.HasKey(itemVariable) && lockInValues.HasKey(itemTypeVariable)) { //both item type and specific item are locked in
+            if (lockInValues.Get(itemVariable).sourceItem == lockInValues.Get(itemTypeVariable)) { //check that this combination is valid
+                BGoapState assignment = new BGoapState();
+                assignment.Set(locationVariable, lockInValues.Get(itemVariable).positionCache);
+                yield return assignment;
+            }
+        }
+        else if (lockInValues.HasKey(itemVariable) && lockInValues.Get(itemVariable) != null) //specific item locked in, fill in it's values
         {
             BGoapState assignment = new BGoapState();
             assignment.Set(itemTypeVariable, lockInValues.Get(itemVariable).sourceItem);

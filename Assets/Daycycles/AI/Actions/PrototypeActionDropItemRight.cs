@@ -22,10 +22,5 @@ class PrototypeActionDropItemRight : PrototypeAction
         yield break;
     }
 
-    protected override IEnumerable<BGoapState> GetPossibleEffectSets(BGoapState lockInValues, IReGoapAgent goapAgent)
-    {
-        yield break;
-    }
-
 }
 

@@ -6,6 +6,12 @@ using UnityEngine;
 
 public class SmartObject : MonoBehaviour {
 
+    public Vector3 positionCache;
+
+    protected void Update()
+    {
+        positionCache = transform.position;
+    }
 
 
 }

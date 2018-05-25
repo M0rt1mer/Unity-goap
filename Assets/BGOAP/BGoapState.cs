@@ -153,6 +153,15 @@ public class BGoapState : ICloneable, IEnumerable<IStateVarKey>, IEnumerable<Key
         }
     }
 
+    public object Get(IStateVarKey key) {
+        lock (values)
+        {
+            if (!values.ContainsKey(key))
+                return null;
+            return values[key];
+        }
+    }
+
     public void Set<T>( AStateVarKey<T> key, T value)
     {
         lock (values)
